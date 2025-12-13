@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinton County Restaurant Health Inspections | Simple Map</title>
+    <meta name="description" content="View health inspection results and food safety violations for restaurants in Clinton County, Iowa. 4-tier risk scoring system based on FDA Food Code.">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        :root {
+            --primary: #979797;
+            --text: #34495e;
+            --text-light: #7f8c8d;
+            --border: #e1e8ed;
+            --bg-light: #f8f9fa;
+            --color-none: #00ba0c;
+            --color-minor: #ffc53e;
+            --color-moderate: #ff8c00;
+            --color-major: #ff0800;
+            --color-critical: #6f0000;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
+            overflow: hidden;
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Full-screen map */
+        #map { 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+        
+        /* Floating search bar container */
+        .floating-search {
+            position: fixed;
+            top: 20px;
+            left: 70px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        
+        .search-wrapper {
+            width: 400px;
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 12px 45px 12px 45px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: box-shadow 0.2s;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            font-size: 1.1rem;
+            pointer-events: none;
+        }
+        
+        .clear-search {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 4px;
+            display: none;
+        }
+        
+        .clear-search:hover {
+            color: var(--color-major);
+        }
+        
+        .clear-search.visible {
+            display: block;
+        }
+        
+        /* Search result count badge */
+        .search-count {
+            position: absolute;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.75rem;
+            color: var(--primary);
+            background: #f0f4ff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            pointer-events: none;
+            font-weight: 600;
+            display: none;
+            white-space: nowrap;
+        }
+        
+        .search-count.visible {
+            display: block;
+        }
+        
+        /* Filter buttons */
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            background: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+            white-space: nowrap;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .filter-btn:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            transform: translateY(-1px);
+        }
+        
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* Dropdown menus for filters - iOS Popover style */
+        .filter-dropdown {
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            min-width: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1002;
+        }
+        
+        /* Popover arrow */
+        .filter-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
+            filter: drop-shadow(0 -2px 2px rgba(0,0,0,0.1));
+            z-index: 1003;
+        }
+        
+        .filter-dropdown.visible {
+            display: block;
+        }
+        
+        .filter-option {
+            padding: 10px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .filter-option:last-child {
+            border-bottom: none;
+        }
+        
+        .filter-option:hover {
+            background: #f8f9ff;
+        }
+        
+        .filter-option.selected {
+            background: #f0f4ff;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        /* Risk level colors in dropdown */
+        .filter-option[data-value="NONE"] {
+            border-left: 8px solid var(--color-none);
+            padding-left: 12px;
+        }
+        
+        .filter-option[data-value="MINOR"] {
+            border-left: 8px solid var(--color-minor);
+            padding-left: 12px;
+        }
+        
+        .filter-option[data-value="MODERATE"] {
+            border-left: 8px solid var(--color-moderate);
+            padding-left: 12px;
+        }
+        
+        .filter-option[data-value="MAJOR"] {
+            border-left: 8px solid var(--color-major);
+            padding-left: 12px;
+        }
+        
+        .filter-option[data-value="CRITICAL"] {
+            border-left: 8px solid var(--color-critical);
+            padding-left: 12px;
+        }
+        
+        /* Sort arrow indicator in dropdown */
+        .filter-option.sort-asc::after {
+            content: ' ↓';
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .filter-option.sort-desc::after {
+            content: ' ↑';
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        /* Results sidebar */
+        .results-sidebar {
+            position: fixed;
+            top: 75px;
+            left: 70px;
+            width: 400px;
+            max-height: calc(100vh - 95px);
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            overflow-y: auto;
+            z-index: 999;
+            display: none;
+        }
+        
+        .results-sidebar.visible {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Stats container */
+        .stats-container {
+            background: linear-gradient(135deg, var(--primary) 0%, #979797 100%);
+            padding: 16px;
+            color: white;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+        
+        /* Gauge sections */
+        .gauge-section {
+            margin-top: 16px;
+            position: relative;  /* Added for tooltip positioning context */
+        }
+        
+        .gauge-label {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .gauge-bar {
+            display: flex;
+            height: 32px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+            overflow: visible;  /* Changed to visible for tooltips */
+            position: relative;
+            isolation: isolate;  /* Create new stacking context */
+        }
+        
+        /* Inner container to preserve rounded edges */
+        .gauge-bar::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 6px;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .gauge-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            min-width: 0;
+            border: 3px solid transparent;
+            box-sizing: border-box;
+        }
+        
+        /* Rounded corners for first and last segments */
+        .gauge-segment:first-child {
+            border-radius: 6px 0 0 6px;
+        }
+        
+        .gauge-segment:last-child {
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .gauge-segment:hover {
+            filter: brightness(1.2);
+            transform: scaleY(1.1);
+            z-index: 1;
+        }
+        
+        /* Dim non-selected segments when one is selected */
+        .gauge-bar.has-selection .gauge-segment:not(.selected) {
+            opacity: 0.4;
+            filter: brightness(0.7);
+        }
+        
+        /* Selected state for risk gauge segments */
+        .gauge-segment.selected {
+            filter: brightness(1.2);
+            border: 3px solid white;
+            box-shadow: 0 0 12px rgba(255,255,255,0.6);
+            z-index: 2;
+            opacity: 1 !important;
+        }
+        
+        /* Hover label (shows tier/level name) */
+        .gauge-segment::before {
+            content: attr(data-label);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            margin-bottom: 8px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 100;
+        }
+        
+        .gauge-segment::after {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: rgba(0,0,0,0.9);
+            margin-bottom: 4px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            z-index: 100;
+        }
+        
+        .gauge-segment:hover::before,
+        .gauge-segment:hover::after {
+            opacity: 1;
+        }
+        
+        /* Count displayed inside segment */
+        .gauge-count {
+            display: inline-block;
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+        
+        /* Risk gauge colors */
+        .risk-none { background: var(--color-none); }
+        .risk-minor { background: var(--color-minor); }
+        .risk-moderate { background: var(--color-moderate); }
+        .risk-major { background: var(--color-major); }
+        .risk-critical { background: var(--color-critical); }
+        
+        /* Violation gauge colors */
+        .viol-high { background: #ff0800; }
+        .viol-medium { background: #ff8c00; }
+        .viol-low { background: #ffc53e; }
+        
+        /* Results list */
+        .results-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        
+        .result-item {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .result-item:hover {
+            border-color: var(--primary);
+            transform: translateX(2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .result-item.selected {
+            border-color: var(--primary);
+            background: #f8f9ff;
+        }
+        
+        .result-item.expanded {
+            border-color: var(--primary);
+            background: #fafbff;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .result-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+            flex: 1;
+            line-height: 1.4;
+        }
+        
+        .result-name mark,
+        .result-address mark {
+            background: #fff3cd;
+            color: #856404;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 800;
+        }
+        
+        .result-badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+            flex-shrink: 0;
+        }
+        
+        .result-address {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+        
+        .result-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            flex-wrap: wrap;
+        }
+        
+        .result-score {
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        /* Expanded details */
+        .result-details {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 2px solid var(--border);
+        }
+        
+        .result-item.expanded .result-details {
+            display: block;
+        }
+        
+        .detail-section {
+            margin-bottom: 12px;
+        }
+        
+        .detail-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .violations-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .violation-item {
+            background: #fff5f5;
+            border-left: 4px solid var(--color-major);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .violation-item.high {
+            border-left-color: var(--color-major);
+            background: #fff5f5;
+        }
+        
+        .violation-item.medium {
+            border-left-color: var(--color-moderate);
+            background: #fffbf0;
+        }
+        
+        .violation-item.low {
+            border-left-color: var(--color-minor);
+            background: #fffef0;
+        }
+        
+        .violation-code {
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+        
+        .violation-badges {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+        
+        .violation-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .badge-tier {
+            background: #ff0800;
+        }
+        
+        .badge-tier.medium {
+            background: var(--color-moderate);
+        }
+        
+        .badge-tier.low {
+            background: var(--color-minor);
+        }
+        
+        .badge-points {
+            background: #3498db;
+        }
+        
+        .badge-fda {
+            background: #9b59b6;
+        }
+        
+        /* Keyword match badge and styling */
+        .badge-match {
+            background: #00ba0c;
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-badge {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .violation-item.keyword-match {
+            border-left-width: 6px;
+            box-shadow: 0 2px 8px rgba(39, 174, 96, 0.2);
+        }
+        
+        .violation-explanation {
+            font-size: 0.8rem;
+            color: var(--text);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+        
+        .violation-comments {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 6px;
+            padding: 8px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 4px;
+            line-height: 1.4;
+        }
+        
+        .no-violations {
+            color: var(--color-none);
+            font-style: italic;
+            padding: 12px;
+            text-align: center;
+            background: #f0f9f4;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        /* Legend at bottom */
+        .legend-container {
+            background: var(--bg-light);
+            padding: 16px;
+            border-top: 2px solid var(--border);
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .legend-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .legend-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .legend-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        
+        /* Loader */
+        #loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loader-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .floating-search {
+                flex-direction: column;
+                top: 10px;
+                left: 10px;
+                right: 10px;
+            }
+            
+            .search-wrapper {
+                width: 100%;
+            }
+            
+            .filter-buttons {
+                flex-wrap: wrap;
+            }
+            
+            .results-sidebar {
+                left: 10px;
+                right: 10px;
+                width: auto;
+                top: 180px;
+                max-height: calc(100vh - 200px);
+            }
+        }
+        
+        /* Persistent tooltip for selected marker */
+        .leaflet-tooltip.persistent-tooltip {
+            background: white;
+            border: 2px solid var(--primary);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            font-weight: 600;
+        }
+        
+        .leaflet-tooltip.persistent-tooltip::before {
+            border-right-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div id="loader">
+    <div class="spinner"></div>
+    <div class="loader-text">Loading inspection data...</div>
+</div>
+
+<div id="map"></div>
+
+<!-- Floating search bar and filters -->
+<div class="floating-search">
+    <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input 
+            type="text" 
+            id="searchInput" 
+            class="search-box" 
+            placeholder="Name, city, type, address, keywords
+            autocomplete="off"
+        >
+        <span class="search-count" id="searchCount">
+            <span id="matchCount">0</span> matches
+        </span>
+        <button class="clear-search" id="clearSearch">✕</button>
+    </div>
+    
+    <div class="filter-buttons">
+        <button class="filter-btn" id="riskFilterBtn">
+            Risk: <span id="riskFilterText">(All)</span>
+            <div class="filter-dropdown" id="riskDropdown">
+                <div class="filter-option selected" data-value="all">All</div>
+                <div class="filter-option" data-value="NONE">None</div>
+                <div class="filter-option" data-value="MINOR">Minor</div>
+                <div class="filter-option" data-value="MODERATE">Moderate</div>
+                <div class="filter-option" data-value="MAJOR">Major</div>
+                <div class="filter-option" data-value="CRITICAL">Critical</div>
+            </div>
+        </button>
+        
+        <button class="filter-btn" id="typeFilterBtn">
+            Type: <span id="typeFilterText">(All)</span>
+            <div class="filter-dropdown" id="typeDropdown">
+                <div class="filter-option selected" data-value="all">All</div>
+                <div class="filter-option" data-value="Restaurant">Restaurant</div>
+                <div class="filter-option" data-value="Fast Food">Fast Food</div>
+                <div class="filter-option" data-value="Grocery Store">Grocery</div>
+                <div class="filter-option" data-value="School">School</div>
+                <div class="filter-option" data-value="Bar/Brewery/Distillery">Bar/Brewery</div>
+                <div class="filter-option" data-value="Coffee Shop/Cafe">Coffee/Cafe</div>
+                <div class="filter-option" data-value="Gas Station/Convenience">Gas Station</div>
+                <div class="filter-option" data-value="Bakery/Dessert">Bakery</div>
+                <div class="filter-option" data-value="Hotel/Lodging">Hotel</div>
+                <div class="filter-option" data-value="Senior/Community Center">Senior Center</div>
+                <div class="filter-option" data-value="Catering">Catering</div>
+            </div>
+        </button>
+        
+        <button class="filter-btn" id="cityFilterBtn">
+            City: <span id="cityFilterText">(All)</span>
+            <div class="filter-dropdown" id="cityDropdown">
+                <div class="filter-option selected" data-value="all">All</div>
+                <!-- Cities populated dynamically -->
+            </div>
+        </button>
+        
+        <button class="filter-btn" id="sortBtn">
+            Sort: <span id="sortText">Name</span> <span id="sortDirection">↓</span>
+            <div class="filter-dropdown" id="sortDropdown">
+                <div class="filter-option selected sort-asc" data-value="name">Name</div>
+                <div class="filter-option" data-value="date">Inspection Date</div>
+                <div class="filter-option" data-value="risk">Risk Score</div>
+                <div class="filter-option" data-value="violations">Violation Count</div>
+            </div>
+        </button>
+    </div>
+</div>
+
+<!-- Results sidebar -->
+<div class="results-sidebar" id="resultsSidebar">
+    <div class="stats-container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">Viewing</div>
+                <div class="stat-value" id="stat-visible">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total</div>
+                <div class="stat-value" id="stat-total">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Avg. Risk Score</div>
+                <div class="stat-value" id="stat-avg">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Avg. Violation Count</div>
+                <div class="stat-value" id="stat-violations">0</div>
+            </div>
+        </div>
+        
+        <!-- Violation Type Gauge -->
+        <div class="gauge-section">
+            <div class="gauge-label">Violation Types</div>
+            <div class="gauge-bar" id="violationGauge">
+                <div class="gauge-segment viol-high" data-type="HIGH" data-label="High" style="width: 0%">
+                    <span class="gauge-count">0</span>
+                </div>
+                <div class="gauge-segment viol-medium" data-type="MEDIUM" data-label="Medium" style="width: 0%">
+                    <span class="gauge-count">0</span>
+                </div>
+                <div class="gauge-segment viol-low" data-type="LOW" data-label="Low" style="width: 0%">
+                    <span class="gauge-count">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Risk Overview Gauge -->
+        <div class="gauge-section">
+            <div class="gauge-label">Risk Overview</div>
+            <div class="gauge-bar" id="riskGauge">
+                <div class="gauge-segment risk-none" data-risk="NONE" data-label="None" style="width: 0%">
+                    <span class="gauge-count">0</span>
+                </div>
+                <div class="gauge-segment risk-minor" data-risk="MINOR" data-label="Minor" style="width: 0%">
+                    <span class="gauge-count">0</span>
+                </div>
+                <div class="gauge-segment risk-moderate" data-risk="MODERATE" data-label="Moderate" style="width: 0%">
+                    <span class="gauge-count">0</span>
+                </div>
+                <div class="gauge-segment risk-major" data-risk="MAJOR" data-label="Major" style="width: 0%">
+                    <span class="gauge-count">0</span>
+                </div>
+                <div class="gauge-segment risk-critical" data-risk="CRITICAL" data-label="Critical" style="width: 0%">
+                    <span class="gauge-count">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="results-list" id="resultsList"></div>
+    
+    <div class="legend-container">
+        <div class="legend-title">Risk Level Guide</div>
+        <div class="legend-row">
+            <span class="dot" style="background: var(--color-none);"></span>
+            <strong>None</strong> – No violations (0 pts)
+        </div>
+        <div class="legend-row">
+            <span class="dot" style="background: var(--color-minor);"></span>
+            <strong>Minor</strong> – Few issues (1-14 pts)
+        </div>
+        <div class="legend-row">
+            <span class="dot" style="background: var(--color-moderate);"></span>
+            <strong>Moderate</strong> – Multiple issues (15-50 pts)
+        </div>
+        <div class="legend-row">
+            <span class="dot" style="background: var(--color-major);"></span>
+            <strong>Major</strong> – Serious concerns (51-75 pts)
+        </div>
+        <div class="legend-row">
+            <span class="dot" style="background: var(--color-critical);"></span>
+            <strong>Critical</strong> – Major hazards (76+ pts)
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+<script>
+// Global state
+let map, markersCluster, allData = [];
+let currentRiskFilter = 'all';
+let currentTypeFilter = 'all';
+let currentCityFilter = 'all';
+let currentSort = 'name';
+let sortAscending = true;
+let selectedEstablishment = null;
+let persistentTooltip = null;
+let searchDebounceTimer = null;
+
+// Debounce function for search performance
+function debounce(func, wait) {
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(searchDebounceTimer);
+            func(...args);
+        };
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(later, wait);
+    };
+}
+
+// Initialize map
+function initMap() {
+    map = L.map('map', {
+        zoomControl: true,
+        attributionControl: true
+    }).setView([41.8486, -90.3312], 11); // Clinton County, IA center
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 20,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    // Marker cluster
+    markersCluster = L.markerClusterGroup({
+        maxClusterRadius: 50,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: true,
+        zoomToBoundsOnClick: true,
+        iconCreateFunction: createClusterIcon
+    });
+    
+    map.addLayer(markersCluster);
+}
+
+// Create cluster icon with pie chart
+function createClusterIcon(cluster) {
+    const markers = cluster.getAllChildMarkers();
+    const counts = { critical: 0, major: 0, moderate: 0, minor: 0, none: 0 };
+    
+    markers.forEach(marker => {
+        const level = marker.options.riskLevel || 'NONE';
+        switch(level) {
+            case 'CRITICAL': counts.critical++; break;
+            case 'MAJOR': counts.major++; break;
+            case 'MODERATE': counts.moderate++; break;
+            case 'MINOR': counts.minor++; break;
+            default: counts.none++;
+        }
+    });
+    
+    const total = markers.length;
+    const size = 40;
+    const radius = size / 2;
+    const center = radius;
+    
+    let segments = [];
+    let currentAngle = 0;
+    
+    const levels = [
+        { key: 'critical', color: '#6f0000', count: counts.critical },
+        { key: 'major', color: '#ff0800', count: counts.major },
+        { key: 'moderate', color: '#ff8c00', count: counts.moderate },
+        { key: 'minor', color: '#ffc53e', count: counts.minor },
+        { key: 'none', color: '#00ba0c', count: counts.none }
+    ];
+    
+    levels.forEach(level => {
+        if (level.count > 0) {
+            const angle = (level.count / total) * 360;
+            segments.push({
+                color: level.color,
+                startAngle: currentAngle,
+                endAngle: currentAngle + angle
+            });
+            currentAngle += angle;
+        }
+    });
+    
+    let svgPaths = '';
+    
+    if (segments.length === 1) {
+        svgPaths = `<circle cx="${center}" cy="${center}" r="${radius}" fill="${segments[0].color}" stroke="white" stroke-width="2"/>`;
+    } else {
+        segments.forEach(seg => {
+            const startRad = (seg.startAngle - 90) * Math.PI / 180;
+            const endRad = (seg.endAngle - 90) * Math.PI / 180;
+            const x1 = center + radius * Math.cos(startRad);
+            const y1 = center + radius * Math.sin(startRad);
+            const x2 = center + radius * Math.cos(endRad);
+            const y2 = center + radius * Math.sin(endRad);
+            const largeArc = seg.endAngle - seg.startAngle > 180 ? 1 : 0;
+            
+            svgPaths += `<path d="M ${center} ${center} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z" fill="${seg.color}" stroke="white" stroke-width="1.5"/>`;
+        });
+    }
+    
+    const svg = `
+        <svg width="${size}" height="${size}">
+            ${svgPaths}
+            <circle cx="${center}" cy="${center}" r="${radius * 0.6}" fill="white"/>
+            <text x="${center}" y="${center}" text-anchor="middle" dy="0.35em" font-size="14" font-weight="bold" fill="#2c3e50">${total}</text>
+        </svg>
+    `;
+    
+    return L.divIcon({
+        html: svg,
+        className: 'custom-cluster-icon',
+        iconSize: [size, size]
+    });
+}
+
+// Get color from risk level
+function getColor(riskLevel) {
+    switch(riskLevel) {
+        case 'NONE': return '#00ba0c';
+        case 'MINOR': return '#ffc53e';
+        case 'MODERATE': return '#ff8c00';
+        case 'MAJOR': return '#ff0800';
+        case 'CRITICAL': return '#6f0000';
+        default: return '#95a5a6';
+    }
+}
+
+// Render markers on map
+function renderMarkers(data) {
+    markersCluster.clearLayers();
+    
+    data.forEach(r => {
+        if (!r.lat || !r.lng) return;
+        
+        const color = getColor(r.riskLevel);
+        const icon = L.divIcon({
+            html: `<div style="background:${color};width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div>`,
+            iconSize: [22, 22],
+            iconAnchor: [11, 11],
+            className: 'custom-marker'
+        });
+        
+        const marker = L.marker([r.lat, r.lng], {
+            icon: icon,
+            riskLevel: r.riskLevel,
+            establishment: r
+        });
+        
+        // Create tooltip
+        const tooltipContent = `
+            <div style="font-weight:700;margin-bottom:6px;">${r.name}</div>
+            <div style="font-size:0.85rem;color:#666;margin-bottom:4px;">${r.addr}</div>
+            <div style="font-size:0.85rem;">
+                <span style="font-weight:700;color:${color};">${r.riskLevel}</span> – 
+                Score: ${r.riskScore}
+            </div>
+        `;
+        
+        marker.bindTooltip(tooltipContent, { 
+            offset: [12, 0], 
+            direction: 'right',
+            permanent: false
+        });
+        
+        marker.on('click', () => {
+            // Center on marker, but don't zoom out if already closer
+            const currentZoom = map.getZoom();
+            const targetZoom = Math.max(currentZoom, 16); // Don't zoom out, only in or stay
+            map.setView([r.lat, r.lng], targetZoom, { animate: true });
+            
+            // Make tooltip persistent
+            showPersistentTooltip(marker, tooltipContent);
+            
+            // Show details in sidebar
+            showDetails(r);
+        });
+        
+        markersCluster.addLayer(marker);
+    });
+}
+
+// Show persistent tooltip for selected marker
+function showPersistentTooltip(marker, content) {
+    // Remove previous persistent tooltip
+    if (persistentTooltip) {
+        map.closeTooltip(persistentTooltip);
+    }
+    
+    // Create new persistent tooltip
+    persistentTooltip = L.tooltip({
+        permanent: true,
+        offset: [12, 0],
+        direction: 'right',
+        className: 'persistent-tooltip'
+    })
+    .setLatLng(marker.getLatLng())
+    .setContent(content)
+    .addTo(map);
+}
+
+// Auto-zoom map to fit all filtered results
+function autoZoomToResults(results) {
+    if (!results || results.length === 0) {
+        // No results - reset to default view
+        map.setView([41.5868, -93.6250], 12);
+        return;
+    }
+    
+    // Filter results that have valid coordinates
+    const validResults = results.filter(r => r.lat && r.lng);
+    
+    if (validResults.length === 0) {
+        return; // No valid coordinates
+    }
+    
+    if (validResults.length === 1) {
+        // Single result - zoom to it
+        map.setView([validResults[0].lat, validResults[0].lng], 15, { animate: true });
+        return;
+    }
+    
+    // Multiple results - create bounds and fit
+    const bounds = L.latLngBounds(validResults.map(r => [r.lat, r.lng]));
+    
+    map.fitBounds(bounds, {
+        padding: [50, 50], // Add padding around edges
+        maxZoom: 16,       // Don't zoom in too close
+        animate: true,
+        duration: 0.5      // Smooth animation
+    });
+}
+
+// Apply filters and show results
+function applyFilters() {
+    const query = document.getElementById('searchInput').value.trim();
+    const clearBtn = document.getElementById('clearSearch');
+    const searchCount = document.getElementById('searchCount');
+    const matchCount = document.getElementById('matchCount');
+    
+    // Show/hide clear button
+    clearBtn.classList.toggle('visible', query.length > 0);
+    
+    // Normalize query: remove punctuation, split into terms
+    const normalizedQuery = query.toLowerCase()
+        .replace(/[^\w\s]/g, '') // Remove all punctuation
+        .replace(/\s+/g, ' ')     // Normalize whitespace
+        .trim();
+    
+    const queryTerms = normalizedQuery.split(/\s+/).filter(t => t.length > 0);
+    
+    // Filter and score results
+    const filteredWithScores = allData.map(r => {
+        // Apply non-search filters first
+        const matchesRisk = currentRiskFilter === 'all' || r.riskLevel === currentRiskFilter;
+        const matchesType = currentTypeFilter === 'all' || r.facilityType === currentTypeFilter;
+        const matchesCity = currentCityFilter === 'all' || r.city === currentCityFilter;
+        
+        if (!matchesRisk || !matchesType || !matchesCity) {
+            return null; // Filtered out by non-search filters
+        }
+        
+        // If no search query, include all
+        if (queryTerms.length === 0) {
+            return { ...r, searchScore: 0, matchedTerms: [] };
+        }
+        
+        // Normalize facility data (remove punctuation for matching)
+        const normalize = (str) => (str || '').toLowerCase().replace(/[^\w\s]/g, '');
+        
+        const nameNorm = normalize(r.name);
+        const cityNorm = normalize(r.city);
+        const addrNorm = normalize(r.addr);
+        const typeNorm = normalize(r.facilityType);
+        const phoneNorm = (r.phone || '').replace(/\D/g, ''); // Keep only digits
+        const zipNorm = r.zipCode || '';
+        const countyNorm = normalize(r.county);
+        
+        // NEW: Add violation text to search (for keywords like "mold", "cockroach", etc.)
+        const violationText = (r.violations || [])
+            .map(v => `${v.codeExplanation || ''} ${v.inspectorComments || ''}`)
+            .join(' ');
+        const violationNorm = normalize(violationText);
+        
+        // Create searchable text
+        const searchableText = `${nameNorm} ${cityNorm} ${addrNorm} ${typeNorm} ${phoneNorm} ${zipNorm} ${countyNorm} ${violationNorm}`;
+        
+        // Calculate match score
+        let score = 0;
+        let matchedTerms = [];
+        let matchedFields = new Set();
+        
+        queryTerms.forEach(term => {
+            if (searchableText.includes(term)) {
+                matchedTerms.push(term);
+                
+                // Track if this term matched any facility info (not just violations)
+                let matchedFacilityInfo = false;
+                
+                // Field-specific scoring (higher weight for more relevant fields)
+                if (nameNorm.includes(term)) {
+                    score += 20;
+                    if (nameNorm.startsWith(term)) score += 15; // Boost for starts-with
+                    matchedFields.add('name');
+                    matchedFacilityInfo = true;
+                }
+                if (cityNorm.includes(term)) {
+                    score += 12;
+                    matchedFields.add('city');
+                    matchedFacilityInfo = true;
+                }
+                if (zipNorm.includes(term)) {
+                    score += 10; // Zip is very specific
+                    matchedFields.add('zip');
+                    matchedFacilityInfo = true;
+                }
+                if (typeNorm.includes(term)) {
+                    score += 8;
+                    matchedFields.add('type');
+                    matchedFacilityInfo = true;
+                }
+                if (addrNorm.includes(term)) {
+                    score += 6;
+                    matchedFields.add('address');
+                    matchedFacilityInfo = true;
+                }
+                if (phoneNorm.includes(term)) {
+                    score += 5;
+                    matchedFields.add('phone');
+                    matchedFacilityInfo = true;
+                }
+                if (countyNorm.includes(term)) {
+                    score += 3;
+                    matchedFields.add('county');
+                    matchedFacilityInfo = true;
+                }
+                
+                // Violation keyword matching - ONLY if not found in facility info
+                // This makes violations a fallback/secondary search, not primary
+                if (term.length >= 3 && violationNorm.includes(term) && !matchedFacilityInfo) {
+                    score += 2; // Low weight - only for fallback keyword searches
+                    matchedFields.add('violation');
+                }
+            }
+        });
+        
+        // Must match ALL terms
+        if (matchedTerms.length !== queryTerms.length) {
+            return null; // Doesn't match all search terms
+        }
+        
+        // Bonus for exact phrase match (after normalization)
+        if (searchableText.includes(normalizedQuery)) {
+            score += 30;
+        }
+        
+        // Bonus for matching all terms
+        score += 25;
+        
+        return { 
+            ...r, 
+            searchScore: score,
+            matchedTerms: queryTerms,
+            matchedFields: Array.from(matchedFields)
+        };
+    })
+    .filter(r => r !== null) // Remove filtered out items
+    .sort((a, b) => b.searchScore - a.searchScore); // Sort by relevance score
+    
+    // Update search count badge
+    if (query.length > 0 && filteredWithScores.length > 0) {
+        matchCount.textContent = filteredWithScores.length;
+        searchCount.classList.add('visible');
+        
+        // Update sort button to show relevance is active
+        const hasSearchScores = filteredWithScores.some(r => r.searchScore > 0);
+        if (hasSearchScores) {
+            document.getElementById('sortText').textContent = 'Relevance';
+            document.getElementById('sortBtn').style.background = 'var(--primary)';
+            document.getElementById('sortBtn').style.color = 'white';
+        }
+    } else {
+        searchCount.classList.remove('visible');
+        
+        // Reset sort button to normal when no search
+        const sortText = {
+            'name': 'Name',
+            'date': 'Inspection Date',
+            'risk': 'Risk Score',
+            'violations': 'Violation Count'
+        };
+        document.getElementById('sortText').textContent = sortText[currentSort] || 'Name';
+        document.getElementById('sortBtn').style.background = '';
+        document.getElementById('sortBtn').style.color = '';
+    }
+    
+    renderMarkers(filteredWithScores);
+    updateStats(filteredWithScores);
+    renderResults(filteredWithScores);
+    
+    // Auto-zoom map to fit all results
+    autoZoomToResults(filteredWithScores);
+    
+    // Show sidebar if there are results
+    const sidebar = document.getElementById('resultsSidebar');
+    sidebar.classList.toggle('visible', filteredWithScores.length > 0);
+    
+    return filteredWithScores;
+}
+
+// Update statistics
+function updateStats(data) {
+    document.getElementById('stat-total').textContent = allData.length;
+    document.getElementById('stat-visible').textContent = data.length;
+    
+    const avg = data.length > 0 
+        ? (data.reduce((s, r) => s + (r.riskScore || 0), 0) / data.length).toFixed(1)
+        : 0;
+    document.getElementById('stat-avg').textContent = avg;
+    
+    // Calculate average violation count
+    const avgViolations = data.length > 0
+        ? (data.reduce((s, r) => s + (r.totalViolations || 0), 0) / data.length).toFixed(1)
+        : 0;
+    document.getElementById('stat-violations').textContent = avgViolations;
+    
+    // Update Risk Overview Gauge
+    const riskCounts = {
+        NONE: 0,
+        MINOR: 0,
+        MODERATE: 0,
+        MAJOR: 0,
+        CRITICAL: 0
+    };
+    
+    data.forEach(r => {
+        const level = r.riskLevel || 'NONE';
+        if (riskCounts.hasOwnProperty(level)) {
+            riskCounts[level]++;
+        }
+    });
+    
+    const total = data.length || 1;
+    
+    // Update risk gauge segments
+    ['NONE', 'MINOR', 'MODERATE', 'MAJOR', 'CRITICAL'].forEach(level => {
+        const segment = document.querySelector(`.gauge-segment.risk-${level.toLowerCase()}`);
+        if (segment) {
+            const count = riskCounts[level];
+            const percentage = (count / total) * 100;
+            segment.style.width = `${percentage}%`;
+            
+            // Update count display (changed from tooltip)
+            const countDisplay = segment.querySelector('.gauge-count');
+            if (countDisplay) {
+                countDisplay.textContent = count;
+            }
+            
+            // Hide segment if count is 0
+            segment.style.display = count === 0 ? 'none' : 'flex';
+        }
+    });
+    
+    // Update Violation Type Gauge
+    const violCounts = {
+        HIGH: 0,
+        MEDIUM: 0,
+        LOW: 0
+    };
+    
+    data.forEach(r => {
+        violCounts.HIGH += (r.highCount || 0);
+        violCounts.MEDIUM += (r.mediumCount || 0);
+        violCounts.LOW += (r.lowCount || 0);
+    });
+    
+    const violTotal = violCounts.HIGH + violCounts.MEDIUM + violCounts.LOW || 1;
+    
+    // Update violation gauge segments
+    ['HIGH', 'MEDIUM', 'LOW'].forEach(tier => {
+        const segment = document.querySelector(`.gauge-segment.viol-${tier.toLowerCase()}`);
+        if (segment) {
+            const count = violCounts[tier];
+            const percentage = (count / violTotal) * 100;
+            segment.style.width = `${percentage}%`;
+            
+            // Update count display (changed from tooltip)
+            const countDisplay = segment.querySelector('.gauge-count');
+            if (countDisplay) {
+                countDisplay.textContent = count;
+            }
+            
+            // Hide segment if count is 0
+            segment.style.display = count === 0 ? 'none' : 'flex';
+        }
+    });
+}
+
+// Sort data
+function sortData(data) {
+    const sorted = [...data];
+    const direction = sortAscending ? 1 : -1;
+    
+    // Check if we have active search results with scores
+    const hasSearchScores = data.length > 0 && data.some(r => r.searchScore > 0);
+    
+    // When searching, ALWAYS sort by relevance first (searchScore)
+    // Then apply secondary sort for ties
+    if (hasSearchScores) {
+        sorted.sort((a, b) => {
+            // Primary: Sort by search relevance (higher score = more relevant)
+            const scoreDiff = (b.searchScore || 0) - (a.searchScore || 0);
+            if (scoreDiff !== 0) return scoreDiff;
+            
+            // Secondary: If scores are tied, use the selected sort option
+            switch(currentSort) {
+                case 'name':
+                    return direction * (a.name || '').localeCompare(b.name || '');
+                case 'date':
+                    const dateA = new Date(a.inspectionDate || 0);
+                    const dateB = new Date(b.inspectionDate || 0);
+                    return direction * (dateB - dateA);
+                case 'risk':
+                    return direction * ((b.riskScore || 0) - (a.riskScore || 0));
+                case 'violations':
+                    return direction * ((b.totalViolations || 0) - (a.totalViolations || 0));
+                default:
+                    return 0;
+            }
+        });
+        return sorted;
+    }
+    
+    // No active search - use normal sort
+    switch(currentSort) {
+        case 'name':
+            sorted.sort((a, b) => direction * (a.name || '').localeCompare(b.name || ''));
+            break;
+        case 'date':
+            sorted.sort((a, b) => {
+                const dateA = new Date(a.inspectionDate || 0);
+                const dateB = new Date(b.inspectionDate || 0);
+                return direction * (dateB - dateA);
+            });
+            break;
+        case 'risk':
+            sorted.sort((a, b) => direction * ((b.riskScore || 0) - (a.riskScore || 0)));
+            break;
+        case 'violations':
+            sorted.sort((a, b) => direction * ((b.totalViolations || 0) - (a.totalViolations || 0)));
+            break;
+    }
+    
+    return sorted;
+}
+
+// Render results list
+// Highlight search terms in text
+function highlightText(text, terms) {
+    if (!text || !terms || terms.length === 0) {
+        return text || '';
+    }
+    
+    let highlighted = text;
+    
+    // Normalize and create regex patterns for each term
+    terms.forEach(term => {
+        // Escape special regex characters
+        const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // Create case-insensitive regex that matches the term with optional punctuation
+        const regex = new RegExp(`([^\\w]*)(${escaped})([^\\w]*)`, 'gi');
+        highlighted = highlighted.replace(regex, (match, before, word, after) => {
+            // Only highlight the word itself, keep punctuation outside
+            return `${before}<mark>${word}</mark>${after}`;
+        });
+    });
+    
+    return highlighted;
+}
+
+function renderResults(data) {
+    const list = document.getElementById('resultsList');
+    list.innerHTML = '';
+    
+    if (data.length === 0) {
+        list.innerHTML = '<div style="padding:20px;text-align:center;color:#95a5a6;">No results found</div>';
+        return;
+    }
+    
+    const sorted = sortData(data);
+    
+    sorted.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'result-item';
+        item.dataset.name = r.name;
+        item.dataset.addr = r.addr;
+        
+        if (selectedEstablishment && 
+            selectedEstablishment.name === r.name && 
+            selectedEstablishment.addr === r.addr) {
+            item.classList.add('expanded');
+        }
+        
+        const color = getColor(r.riskLevel);
+        
+        // Highlight search terms in name and address
+        const highlightedName = r.matchedTerms 
+            ? highlightText(r.name || 'Unknown', r.matchedTerms)
+            : (r.name || 'Unknown');
+        
+        const highlightedAddress = r.matchedTerms 
+            ? highlightText(r.addr || 'Address not available', r.matchedTerms)
+            : (r.addr || 'Address not available');
+        
+        // Build violations HTML
+        let violationsHTML = '';
+        if (r.violations && r.violations.length > 0) {
+            // Helper function to check if violation contains any search terms
+            const violationMatchesKeyword = (violation) => {
+                if (!r.matchedTerms || r.matchedTerms.length === 0) return false;
+                
+                const normalize = (str) => (str || '').toLowerCase().replace(/[^\w\s]/g, '');
+                const violationText = normalize(`${violation.codeExplanation || ''} ${violation.inspectorComments || ''}`);
+                
+                return r.matchedTerms.some(term => violationText.includes(term.toLowerCase()));
+            };
+            
+            // Sort violations with smart priority:
+            // 1. Keyword-matched violations first (sorted HIGH → MEDIUM → LOW within matches)
+            // 2. Non-matched violations second (sorted HIGH → MEDIUM → LOW)
+            const tierOrder = { 'HIGH': 0, 'MEDIUM': 1, 'LOW': 2, 'CORE': 3, 'UNKNOWN': 4 };
+            const sortedViolations = [...r.violations].sort((a, b) => {
+                const aMatches = violationMatchesKeyword(a);
+                const bMatches = violationMatchesKeyword(b);
+                
+                // PRIMARY: Keyword matches come first
+                if (aMatches && !bMatches) return -1;
+                if (!aMatches && bMatches) return 1;
+                
+                // SECONDARY: Sort by tier (HIGH → MEDIUM → LOW)
+                const tierA = tierOrder[a.tier] ?? 999;
+                const tierB = tierOrder[b.tier] ?? 999;
+                if (tierA !== tierB) return tierA - tierB;
+                
+                // TERTIARY: Sort by points (highest first)
+                return (b.points || 0) - (a.points || 0);
+            });
+            
+            const violationItems = sortedViolations.map(v => {
+                const tier = (v.tier || 'LOW').toLowerCase();
+                const tierLabel = v.tier || 'UNKNOWN';
+                const points = v.points || 0;
+                const fdaClass = v.fdaClass || '';
+                
+                // Highlight keywords in violation text
+                const explanation = r.matchedTerms 
+                    ? highlightText(v.codeExplanation || '', r.matchedTerms)
+                    : (v.codeExplanation || '');
+                const comments = r.matchedTerms
+                    ? highlightText(v.inspectorComments || '', r.matchedTerms)
+                    : (v.inspectorComments || '');
+                
+                // Check if this specific violation matches the keyword
+                const isKeywordMatch = violationMatchesKeyword(v);
+                
+                return `
+                    <div class="violation-item ${tier} ${isKeywordMatch ? 'keyword-match' : ''}">
+                        <div class="violation-code">${v.violationCode || 'N/A'}</div>
+                        <div class="violation-badges">
+                            ${isKeywordMatch ? '<span class="violation-badge badge-match">🔍 Keyword Match</span>' : ''}
+                            <span class="violation-badge badge-tier ${tier}">${tierLabel}</span>
+                            <span class="violation-badge badge-points">${points} pts</span>
+                            ${fdaClass ? `<span class="violation-badge badge-fda">${fdaClass}</span>` : ''}
+                        </div>
+                        ${explanation ? `<div class="violation-explanation">${explanation}</div>` : ''}
+                        ${comments ? `<div class="violation-comments"><strong>Inspector:</strong> ${comments}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            violationsHTML = `
+                <div class="detail-section">
+                    <div class="detail-label">Violations (${r.violations.length})</div>
+                    <div class="violations-list">
+                        ${violationItems}
+                    </div>
+                </div>
+            `;
+        } else {
+            violationsHTML = `
+                <div class="detail-section">
+                    <div class="no-violations">✓ No violations found</div>
+                </div>
+            `;
+        }
+        
+        item.innerHTML = `
+            <div class="result-header">
+                <div style="flex: 1;">
+                    <div class="result-name">${highlightedName}</div>
+                    <div class="result-address">${highlightedAddress}</div>
+                    <div class="result-meta">
+                        <span class="result-score">Score: ${r.riskScore || 0}</span>
+                        <span>${r.totalViolations || 0} violation${r.totalViolations !== 1 ? 's' : ''}</span>
+                        <span>${r.inspectionDate || 'Date unknown'}</span>
+                        ${r.facilityType ? `<span>${r.facilityType}</span>` : ''}
+                        ${r.matchedFields && r.matchedFields.includes('violation') ? 
+                            '<span style="color:#e67e22;font-weight:700;">🔍 Found in violations</span>' : ''}
+                    </div>
+                </div>
+                <span class="result-badge" style="background:${color};">${r.riskLevel}</span>
+            </div>
+            <div class="result-details">
+                ${violationsHTML}
+            </div>
+        `;
+        
+        item.addEventListener('click', () => toggleDetails(item, r));
+        list.appendChild(item);
+    });
+}
+
+// Toggle result details
+function toggleDetails(item, establishment) {
+    const wasExpanded = item.classList.contains('expanded');
+    
+    // Collapse all others
+    document.querySelectorAll('.result-item').forEach(i => i.classList.remove('expanded'));
+    
+    if (!wasExpanded) {
+        item.classList.add('expanded');
+        selectedEstablishment = establishment;
+        
+        // Center map on this location with zoom
+        if (establishment.lat && establishment.lng) {
+            // Zoom to level 18 (closer) when clicking from list to avoid cluster issues
+            // This ensures individual markers are visible even when facilities are close together
+            map.setView([establishment.lat, establishment.lng], 18, { animate: true });
+            
+            // Show persistent tooltip
+            const color = getColor(establishment.riskLevel);
+            const tooltipContent = `
+                <div style="font-weight:700;margin-bottom:6px;">${establishment.name}</div>
+                <div style="font-size:0.85rem;color:#666;margin-bottom:4px;">${establishment.addr}</div>
+                <div style="font-size:0.85rem;">
+                    <span style="font-weight:700;color:${color};">${establishment.riskLevel}</span> – 
+                    Score: ${establishment.riskScore}
+                </div>
+            `;
+            
+            // Remove previous persistent tooltip
+            if (persistentTooltip) {
+                map.closeTooltip(persistentTooltip);
+            }
+            
+            // Create new persistent tooltip
+            persistentTooltip = L.tooltip({
+                permanent: true,
+                offset: [12, 0],
+                direction: 'right',
+                className: 'persistent-tooltip'
+            })
+            .setLatLng([establishment.lat, establishment.lng])
+            .setContent(tooltipContent)
+            .addTo(map);
+        }
+    } else {
+        selectedEstablishment = null;
+        
+        // Remove persistent tooltip
+        if (persistentTooltip) {
+            map.closeTooltip(persistentTooltip);
+            persistentTooltip = null;
+        }
+    }
+}
+
+// Show details (from marker click)
+function showDetails(establishment) {
+    const items = document.querySelectorAll('.result-item');
+    items.forEach(item => {
+        if (item.dataset.name === establishment.name && item.dataset.addr === establishment.addr) {
+            item.classList.add('expanded');
+            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            selectedEstablishment = establishment;
+        } else {
+            item.classList.remove('expanded');
+        }
+    });
+}
+
+// Enhanced autocomplete with multi-word fuzzy matching
+
+// Filter dropdown handlers
+function setupFilterDropdowns() {
+    // Risk filter
+    const riskBtn = document.getElementById('riskFilterBtn');
+    const riskDropdown = document.getElementById('riskDropdown');
+    
+    riskBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        riskDropdown.classList.toggle('visible');
+        closeOtherDropdowns('riskDropdown');
+    });
+    
+    riskDropdown.querySelectorAll('.filter-option').forEach(option => {
+        option.addEventListener('click', () => {
+            riskDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
+            option.classList.add('selected');
+            currentRiskFilter = option.dataset.value;
+            document.getElementById('riskFilterText').textContent = option.dataset.value === 'all' ? '(All)' : option.textContent;
+            
+            const riskGauge = document.getElementById('riskGauge');
+            
+            // Clear gauge selection if 'All' is selected
+            if (option.dataset.value === 'all') {
+                document.querySelectorAll('#riskGauge .gauge-segment').forEach(s => {
+                    s.classList.remove('selected');
+                });
+                riskGauge.classList.remove('has-selection');
+            } else {
+                // Sync gauge selection with dropdown
+                document.querySelectorAll('#riskGauge .gauge-segment').forEach(s => {
+                    s.classList.remove('selected');
+                });
+                const gaugeSegment = document.querySelector(`#riskGauge .gauge-segment[data-risk="${option.dataset.value}"]`);
+                if (gaugeSegment) {
+                    gaugeSegment.classList.add('selected');
+                    riskGauge.classList.add('has-selection');
+                }
+            }
+            
+            riskDropdown.classList.remove('visible');
+            applyFilters();
+        });
+    });
+    
+    // Type filter
+    const typeBtn = document.getElementById('typeFilterBtn');
+    const typeDropdown = document.getElementById('typeDropdown');
+    
+    typeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        typeDropdown.classList.toggle('visible');
+        closeOtherDropdowns('typeDropdown');
+    });
+    
+    typeDropdown.querySelectorAll('.filter-option').forEach(option => {
+        option.addEventListener('click', () => {
+            typeDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
+            option.classList.add('selected');
+            currentTypeFilter = option.dataset.value;
+            document.getElementById('typeFilterText').textContent = option.dataset.value === 'all' ? '(All)' : option.textContent;
+            typeDropdown.classList.remove('visible');
+            applyFilters();
+        });
+    });
+    
+    // City filter
+    const cityBtn = document.getElementById('cityFilterBtn');
+    const cityDropdown = document.getElementById('cityDropdown');
+    
+    cityBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cityDropdown.classList.toggle('visible');
+        closeOtherDropdowns('cityDropdown');
+    });
+    
+    cityDropdown.querySelectorAll('.filter-option').forEach(option => {
+        option.addEventListener('click', () => {
+            cityDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
+            option.classList.add('selected');
+            currentCityFilter = option.dataset.value;
+            document.getElementById('cityFilterText').textContent = option.dataset.value === 'all' ? '(All)' : option.textContent;
+            cityDropdown.classList.remove('visible');
+            applyFilters();
+        });
+    });
+    
+    // Sort
+    const sortBtn = document.getElementById('sortBtn');
+    const sortDropdown = document.getElementById('sortDropdown');
+    
+    sortBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sortDropdown.classList.toggle('visible');
+        closeOtherDropdowns('sortDropdown');
+    });
+    
+    sortDropdown.querySelectorAll('.filter-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const newSort = option.dataset.value;
+            
+            if (newSort === currentSort) {
+                // Toggle direction
+                sortAscending = !sortAscending;
+            } else {
+                // New sort field
+                sortDropdown.querySelectorAll('.filter-option').forEach(o => {
+                    o.classList.remove('selected');
+                    o.classList.remove('sort-asc');
+                    o.classList.remove('sort-desc');
+                });
+                option.classList.add('selected');
+                currentSort = newSort;
+                sortAscending = true;
+            }
+            
+            // Update arrow classes on all options
+            sortDropdown.querySelectorAll('.filter-option').forEach(o => {
+                o.classList.remove('sort-asc');
+                o.classList.remove('sort-desc');
+            });
+            
+            // Add arrow class to selected option
+            if (sortAscending) {
+                option.classList.add('sort-asc');
+            } else {
+                option.classList.add('sort-desc');
+            }
+            
+            document.getElementById('sortText').textContent = option.textContent.replace(/[↓↑]/g, '').trim();
+            document.getElementById('sortDirection').textContent = sortAscending ? '↓' : '↑';
+            sortDropdown.classList.remove('visible');
+            applyFilters();
+        });
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('visible'));
+    });
+}
+
+// Helper to close other dropdowns
+function closeOtherDropdowns(exceptId) {
+    const dropdowns = ['riskDropdown', 'typeDropdown', 'cityDropdown', 'sortDropdown'];
+    dropdowns.forEach(id => {
+        if (id !== exceptId) {
+            document.getElementById(id).classList.remove('visible');
+        }
+    });
+}
+
+// Populate city filter options
+function populateCityFilter() {
+    const cities = [...new Set(allData.map(r => r.city).filter(Boolean))].sort();
+    const cityDropdown = document.getElementById('cityDropdown');
+    
+    // Keep "All Cities" option
+    cities.forEach(city => {
+        const option = document.createElement('div');
+        option.className = 'filter-option';
+        option.dataset.value = city;
+        option.textContent = city;
+        
+        option.addEventListener('click', () => {
+            cityDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
+            option.classList.add('selected');
+            currentCityFilter = city;
+            document.getElementById('cityFilterText').textContent = city;
+            cityDropdown.classList.remove('visible');
+            applyFilters();
+        });
+        
+        cityDropdown.appendChild(option);
+    });
+}
+
+// Initialize
+initMap();
+setupFilterDropdowns();
+
+// Load data
+fetch('restaurants-geocoded.json')
+    .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+    })
+    .then(data => {
+        allData = data;
+        document.getElementById('loader').style.display = 'none';
+        
+        // Populate city filter
+        populateCityFilter();
+        
+        // Show all facilities by default
+        applyFilters();
+        
+        console.log(`✅ Loaded ${data.length} establishments`);
+    })
+    .catch(err => {
+        console.error('❌ Error loading data:', err);
+        document.getElementById('loader').innerHTML = 
+            '<div style="text-align:center;"><div style="font-size:3rem;margin-bottom:20px;">❌</div><div style="font-size:1.2rem;">Error Loading Data</div></div>';
+    });
+
+// Event listeners
+// Debounced filter for performance with large datasets
+const debouncedFilter = debounce(applyFilters, 200);
+
+document.getElementById('searchInput').addEventListener('input', () => {
+    debouncedFilter();
+});
+
+document.getElementById('clearSearch').addEventListener('click', () => {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchCount').classList.remove('visible');
+    applyFilters();
+});
+
+// Risk gauge click handlers
+document.querySelectorAll('#riskGauge .gauge-segment').forEach(segment => {
+    segment.addEventListener('click', () => {
+        const riskLevel = segment.dataset.risk;
+        const riskGauge = document.getElementById('riskGauge');
+        
+        if (riskLevel) {
+            // Check if clicking already selected segment (toggle off)
+            const isAlreadySelected = segment.classList.contains('selected');
+            
+            if (isAlreadySelected) {
+                // TOGGLE OFF: Return to "All"
+                currentRiskFilter = 'all';
+                
+                // Remove selection from all segments
+                document.querySelectorAll('#riskGauge .gauge-segment').forEach(s => {
+                    s.classList.remove('selected');
+                });
+                
+                // Remove "has-selection" class from gauge bar
+                riskGauge.classList.remove('has-selection');
+                
+                // Update dropdown to "All"
+                document.querySelectorAll('#riskDropdown .filter-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                document.querySelector('#riskDropdown .filter-option[data-value="all"]').classList.add('selected');
+                
+                // Update button text
+                document.getElementById('riskFilterText').textContent = '(All)';
+                
+            } else {
+                // SELECT: Apply this filter
+                currentRiskFilter = riskLevel;
+                
+                // Remove 'selected' class from all gauge segments
+                document.querySelectorAll('#riskGauge .gauge-segment').forEach(s => {
+                    s.classList.remove('selected');
+                });
+                
+                // Add 'selected' class to clicked segment
+                segment.classList.add('selected');
+                
+                // Add "has-selection" class to gauge bar (for dimming others)
+                riskGauge.classList.add('has-selection');
+                
+                // Update UI - remove active class from all risk options
+                document.querySelectorAll('#riskDropdown .filter-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                
+                // Add active class to selected risk level
+                const riskOption = document.querySelector(`#riskDropdown .filter-option[data-value="${riskLevel}"]`);
+                if (riskOption) {
+                    riskOption.classList.add('selected');
+                }
+                
+                // Update button text
+                document.getElementById('riskFilterText').textContent = riskLevel;
+            }
+            
+            // Apply filters
+            applyFilters();
+        }
+    });
+});
+
+
+
+
+</script>
+
+</body>
+</html>
