@@ -320,62 +320,15 @@
         /* Stats container */
         .stats-container {
             background: linear-gradient(135deg, var(--primary) 0%, #979797 100%);
+            padding: 16px;
             color: white;
             border-radius: 8px 8px 0 0;
-        }
-        
-        /* NEW: Stats header with collapse toggle */
-        .stats-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            cursor: pointer;
-            user-select: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .stats-header:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-        
-        .stats-header h3 {
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 0;
-        }
-        
-        .collapse-icon {
-            font-size: 0.9rem;
-            transition: transform 0.3s ease;
-        }
-        
-        /* Rotate arrow when collapsed */
-        .stats-container.collapsed .collapse-icon {
-            transform: rotate(-180deg);
-        }
-        
-        /* NEW: Stats content wrapper for collapse animation */
-        .stats-content {
-            max-height: 1000px;
-            overflow: hidden;
-            transition: max-height 0.3s ease, opacity 0.3s ease;
-            opacity: 1;
-        }
-        
-        .stats-container.collapsed .stats-content {
-            max-height: 0;
-            opacity: 0;
         }
         
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
-            padding: 16px;
-            padding-top: 12px;
         }
         
         .stat-item {
@@ -396,7 +349,7 @@
         
         /* Gauge sections */
         .gauge-section {
-            margin: 0 16px 16px 16px;
+            margin-top: 16px;
             position: relative;  /* Added for tooltip positioning context */
         }
         
@@ -839,219 +792,28 @@
         }
         
         /* Responsive */
-        /* Mobile-specific adjustments */
         @media (max-width: 768px) {
-            body {
-                position: fixed;
-                width: 100%;
-                height: 100%;
-                overflow: hidden;
-            }
-            
             .floating-search {
-                position: fixed;
-                top: 12px;
-                left: 12px;
-                right: 12px;
-                border-radius: 12px;
-                padding: 12px;
-                background: transparent;  /* FIXED: Transparent background */
-                box-shadow: none;  /* FIXED: No shadow */
-                z-index: 1001;
                 flex-direction: column;
-            }
-            
-            /* Individual elements get white backgrounds */
-            .search-box {
-                padding: 12px 100px 12px 44px;
-                font-size: 0.95rem;
-                background: white;  /* White background on search box */
-                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            }
-            
-            .filter-btn {
-                padding: 8px 14px;
-                font-size: 0.85rem;
-                flex-shrink: 0;
-                background: white;  /* White background on buttons */
-                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                top: 10px;
+                left: 10px;
+                right: 10px;
             }
             
             .search-wrapper {
                 width: 100%;
-                margin-bottom: 8px;
-            }
-            
-            .search-box {
-                padding: 12px 100px 12px 44px;
-                font-size: 0.95rem;
-            }
-            
-            .search-icon {
-                left: 14px;
-                font-size: 1.1rem;
-            }
-            
-            .search-count {
-                right: 46px;
-                font-size: 0.8rem;
             }
             
             .filter-buttons {
-                gap: 6px;
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
-                padding-bottom: 4px;
+                flex-wrap: wrap;
             }
             
-            .filter-buttons::-webkit-scrollbar {
-                display: none;
-            }
-            
-            .clear-all-btn {
-                width: 38px;
-                height: 38px;
-                font-size: 1.1rem;
-            }
-            
-            /* BOTTOM SHEET - Apple Maps Style */
             .results-sidebar {
-                position: fixed;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                top: auto;
-                width: 100%;
-                height: 50vh;
-                border-radius: 20px 20px 0 0;
-                box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
-                transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                will-change: height;
-                touch-action: none;
-                max-height: none;
-            }
-            
-            .results-sidebar.minimized {
-                height: 180px;
-            }
-            
-            .results-sidebar.expanded {
-                height: calc(100vh - 60px);
-            }
-            
-            /* Drag handle */
-            .results-sidebar::before {
-                content: '';
-                position: absolute;
-                top: 8px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 36px;
-                height: 5px;
-                background: rgba(0,0,0,0.3);
-                border-radius: 3px;
-                cursor: grab;
-                z-index: 10;
-            }
-            
-            .results-sidebar.dragging::before {
-                cursor: grabbing;
-            }
-            
-            /* Adjust stats for mobile */
-            .stats-container {
-                padding-bottom: 12px;
-            }
-            
-            .stats-header {
-                padding: 16px 16px 12px;
-            }
-            
-            .stats-grid {
-                padding: 12px 16px;
-            }
-            
-            .stat-value {
-                font-size: 1.5rem;
-            }
-            
-            .gauge-section {
-                margin: 0 16px 12px 16px;
-            }
-            
-            .gauge-bar {
-                height: 28px;
-            }
-            
-            .results-list {
-                padding: 8px;
-            }
-            
-            .result-item {
-                padding: 12px;
-                margin-bottom: 8px;
-            }
-            
-            /* Dropdown adjustments for mobile */
-            .filter-dropdown {
-                position: fixed !important;  /* FIXED: Force fixed positioning */
-                left: 50% !important;
-                top: 50% !important;
-                transform: translate(-50%, -50%) !important;
-                max-width: 90%;
-                max-height: 70vh;
-                border-radius: 16px;
-                z-index: 2001 !important;  /* FIXED: Above everything */
-            }
-            }
-            
-            .filter-dropdown.visible {
-                animation: mobileDropdown 0.3s ease;
-            }
-            
-            @keyframes mobileDropdown {
-                from {
-                    opacity: 0;
-                    transform: translate(-50%, -50%) scale(0.9);
-                }
-                to {
-                    opacity: 1;
-                    transform: translate(-50%, -50%) scale(1);
-                }
-            }
-            
-            /* Backdrop for dropdowns */
-            .dropdown-backdrop {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);  /* FIXED: Darker for visibility */
-                z-index: 2000;  /* FIXED: Below dropdown (2001) but above panel */
-                display: none;
-            }
-            
-            .dropdown-backdrop.visible {
-                display: block;
-            }
-        }
-        
-        /* Very small screens */
-        @media (max-width: 400px) {
-            .filter-btn {
-                padding: 8px 12px;
-                font-size: 0.8rem;
-            }
-            
-            .stat-value {
-                font-size: 1.3rem;
-            }
-            
-            .result-name {
-                font-size: 0.95rem;
+                left: 10px;
+                right: 10px;
+                width: auto;
+                top: 180px;
+                max-height: calc(100vh - 200px);
             }
         }
         
@@ -1150,69 +912,60 @@
 
 <!-- Results sidebar -->
 <div class="results-sidebar" id="resultsSidebar">
-    <div class="stats-container" id="statsContainer">
-        <!-- NEW: Collapsible header -->
-        <div class="stats-header" onclick="toggleStatsCollapse()">
-            <h3>Statistics</h3>
-            <span class="collapse-icon">▼</span>
+    <div class="stats-container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">Viewing</div>
+                <div class="stat-value" id="stat-visible">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Total</div>
+                <div class="stat-value" id="stat-total">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Avg. Risk Score</div>
+                <div class="stat-value" id="stat-avg">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Avg. Violation Count</div>
+                <div class="stat-value" id="stat-violations">0</div>
+            </div>
         </div>
         
-        <!-- NEW: Collapsible content wrapper -->
-        <div class="stats-content">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-label">Viewing</div>
-                    <div class="stat-value" id="stat-visible">0</div>
+        <!-- Violation Type Gauge -->
+        <div class="gauge-section">
+            <div class="gauge-label">Violation Types</div>
+            <div class="gauge-bar" id="violationGauge">
+                <div class="gauge-segment viol-high" data-type="HIGH" data-label="High" style="width: 0%">
+                    <span class="gauge-count">0</span>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">Total</div>
-                    <div class="stat-value" id="stat-total">0</div>
+                <div class="gauge-segment viol-medium" data-type="MEDIUM" data-label="Medium" style="width: 0%">
+                    <span class="gauge-count">0</span>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">Avg. Risk Score</div>
-                    <div class="stat-value" id="stat-avg">0</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Avg. Violation Count</div>
-                    <div class="stat-value" id="stat-violations">0</div>
+                <div class="gauge-segment viol-low" data-type="LOW" data-label="Low" style="width: 0%">
+                    <span class="gauge-count">0</span>
                 </div>
             </div>
-            
-            <!-- Violation Type Gauge -->
-            <div class="gauge-section">
-                <div class="gauge-label">Violation Types</div>
-                <div class="gauge-bar" id="violationGauge">
-                    <div class="gauge-segment viol-high" data-type="HIGH" data-label="High" style="width: 0%">
-                        <span class="gauge-count">0</span>
-                    </div>
-                    <div class="gauge-segment viol-medium" data-type="MEDIUM" data-label="Medium" style="width: 0%">
-                        <span class="gauge-count">0</span>
-                    </div>
-                    <div class="gauge-segment viol-low" data-type="LOW" data-label="Low" style="width: 0%">
-                        <span class="gauge-count">0</span>
-                    </div>
+        </div>
+        
+        <!-- Risk Overview Gauge -->
+        <div class="gauge-section">
+            <div class="gauge-label">Risk Overview</div>
+            <div class="gauge-bar" id="riskGauge">
+                <div class="gauge-segment risk-none" data-risk="NONE" data-label="None" style="width: 0%">
+                    <span class="gauge-count">0</span>
                 </div>
-            </div>
-            
-            <!-- Risk Overview Gauge -->
-            <div class="gauge-section">
-                <div class="gauge-label">Risk Overview</div>
-                <div class="gauge-bar" id="riskGauge">
-                    <div class="gauge-segment risk-none" data-risk="NONE" data-label="None" style="width: 0%">
-                        <span class="gauge-count">0</span>
-                    </div>
-                    <div class="gauge-segment risk-minor" data-risk="MINOR" data-label="Minor" style="width: 0%">
-                        <span class="gauge-count">0</span>
-                    </div>
-                    <div class="gauge-segment risk-moderate" data-risk="MODERATE" data-label="Moderate" style="width: 0%">
-                        <span class="gauge-count">0</span>
-                    </div>
-                    <div class="gauge-segment risk-major" data-risk="MAJOR" data-label="Major" style="width: 0%">
-                        <span class="gauge-count">0</span>
-                    </div>
-                    <div class="gauge-segment risk-critical" data-risk="CRITICAL" data-label="Critical" style="width: 0%">
-                        <span class="gauge-count">0</span>
-                    </div>
+                <div class="gauge-segment risk-minor" data-risk="MINOR" data-label="Minor" style="width: 0%">
+                    <span class="gauge-count">0</span>
+                </div>
+                <div class="gauge-segment risk-moderate" data-risk="MODERATE" data-label="Moderate" style="width: 0%">
+                    <span class="gauge-count">0</span>
+                </div>
+                <div class="gauge-segment risk-major" data-risk="MAJOR" data-label="Major" style="width: 0%">
+                    <span class="gauge-count">0</span>
+                </div>
+                <div class="gauge-segment risk-critical" data-risk="CRITICAL" data-label="Critical" style="width: 0%">
+                    <span class="gauge-count">0</span>
                 </div>
             </div>
         </div>
@@ -1249,12 +1002,6 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 <script>
-// NEW: Toggle function for stats collapse
-function toggleStatsCollapse() {
-    const statsContainer = document.getElementById('statsContainer');
-    statsContainer.classList.toggle('collapsed');
-}
-
 // Global state
 let map, markersCluster, allData = [];
 let currentRiskFilter = 'all';
@@ -2066,14 +1813,6 @@ function setupFilterDropdowns() {
         e.stopPropagation();
         riskDropdown.classList.toggle('visible');
         closeOtherDropdowns('riskDropdown');
-        
-        // FIXED: Show backdrop on mobile
-        if (window.innerWidth <= 768) {
-            const backdrop = document.getElementById('dropdownBackdrop');
-            if (backdrop) {
-                backdrop.classList.add('visible');
-            }
-        }
     });
     
     riskDropdown.querySelectorAll('.filter-option').forEach(option => {
@@ -2116,14 +1855,6 @@ function setupFilterDropdowns() {
         e.stopPropagation();
         typeDropdown.classList.toggle('visible');
         closeOtherDropdowns('typeDropdown');
-        
-        // FIXED: Show backdrop on mobile
-        if (window.innerWidth <= 768) {
-            const backdrop = document.getElementById('dropdownBackdrop');
-            if (backdrop) {
-                backdrop.classList.add('visible');
-            }
-        }
     });
     
     typeDropdown.querySelectorAll('.filter-option').forEach(option => {
@@ -2145,14 +1876,6 @@ function setupFilterDropdowns() {
         e.stopPropagation();
         cityDropdown.classList.toggle('visible');
         closeOtherDropdowns('cityDropdown');
-        
-        // FIXED: Show backdrop on mobile
-        if (window.innerWidth <= 768) {
-            const backdrop = document.getElementById('dropdownBackdrop');
-            if (backdrop) {
-                backdrop.classList.add('visible');
-            }
-        }
     });
     
     cityDropdown.querySelectorAll('.filter-option').forEach(option => {
@@ -2174,14 +1897,6 @@ function setupFilterDropdowns() {
         e.stopPropagation();
         sortDropdown.classList.toggle('visible');
         closeOtherDropdowns('sortDropdown');
-        
-        // FIXED: Show backdrop on mobile
-        if (window.innerWidth <= 768) {
-            const backdrop = document.getElementById('dropdownBackdrop');
-            if (backdrop) {
-                backdrop.classList.add('visible');
-            }
-        }
     });
     
     sortDropdown.querySelectorAll('.filter-option').forEach(option => {
@@ -2435,154 +2150,6 @@ const originalApplyFilters = applyFilters;
 applyFilters = function() {
     originalApplyFilters();
     updateClearAllButton();
-};
-
-// ===================================
-// MOBILE BOTTOM SHEET DRAG HANDLING
-// ===================================
-
-let sheetState = 'half'; // minimized, half, expanded
-let isDragging = false;
-let startY = 0;
-let startHeight = 0;
-
-function setSheetState(state) {
-    if (window.innerWidth > 768) return; // Desktop only
-    
-    const sheet = document.getElementById('resultsSidebar');
-    sheet.classList.remove('minimized', 'expanded');
-    
-    if (state === 'minimized') {
-        sheet.classList.add('minimized');
-    } else if (state === 'expanded') {
-        sheet.classList.add('expanded');
-    }
-    // 'half' is default, no class needed
-    
-    sheetState = state;
-}
-
-function initBottomSheet() {
-    if (window.innerWidth > 768) return; // Only on mobile
-    
-    const sheet = document.getElementById('resultsSidebar');
-    
-    function handleTouchStart(e) {
-        // FIXED: Allow dragging from entire top area (stats section)
-        const touch = e.touches[0];
-        const rect = sheet.getBoundingClientRect();
-        
-        // Can drag from top 200px (entire stats area)
-        if (touch.clientY - rect.top > 200) return;
-        
-        isDragging = true;
-        startY = touch.clientY;
-        startHeight = sheet.offsetHeight;
-        sheet.classList.add('dragging');
-        sheet.style.transition = 'none';
-    }
-    
-    function handleTouchMove(e) {
-        if (!isDragging) return;
-        
-        const touch = e.touches[0];
-        // FIXED: Inverted delta calculation
-        // Dragging DOWN (positive deltaY) should DECREASE height
-        // Dragging UP (negative deltaY) should INCREASE height
-        const deltaY = touch.clientY - startY;
-        const newHeight = startHeight - deltaY;  // FIXED: Subtract delta
-        
-        // Constrain height
-        const minHeight = 180;
-        const maxHeight = window.innerHeight - 60;
-        const constrainedHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
-        
-        sheet.style.height = `${constrainedHeight}px`;
-        e.preventDefault();
-    }
-    
-    function handleTouchEnd(e) {
-        if (!isDragging) return;
-        
-        isDragging = false;
-        sheet.classList.remove('dragging');
-        sheet.style.transition = '';
-        
-        const currentHeight = sheet.offsetHeight;
-        const windowHeight = window.innerHeight;
-        
-        // FIXED: Better snap thresholds
-        // Determine which state to snap to based on height
-        if (currentHeight < windowHeight * 0.3) {
-            setSheetState('minimized');
-        } else if (currentHeight < windowHeight * 0.7) {
-            setSheetState('half');
-        } else {
-            setSheetState('expanded');
-        }
-        
-        sheet.style.height = ''; // Let CSS handle the height
-    }
-    
-    sheet.addEventListener('touchstart', handleTouchStart, {passive: false});
-    sheet.addEventListener('touchmove', handleTouchMove, {passive: false});
-    sheet.addEventListener('touchend', handleTouchEnd);
-}
-
-// Initialize bottom sheet on mobile
-if (window.innerWidth <= 768) {
-    initBottomSheet();
-}
-
-// Handle window resize
-window.addEventListener('resize', () => {
-    if (window.innerWidth > 768) {
-        // Desktop mode - reset sheet
-        const sheet = document.getElementById('resultsSidebar');
-        sheet.classList.remove('minimized', 'expanded', 'dragging');
-        sheet.style.height = '';
-        sheetState = 'half';
-    } else {
-        // Mobile mode - reinitialize if needed
-        if (!isDragging) initBottomSheet();
-    }
-});
-
-// Mobile: Minimize sheet after selecting a result
-const originalShowDetails = showDetails;
-showDetails = function(establishment) {
-    originalShowDetails(establishment);
-    
-    // On mobile, minimize sheet after showing details on map
-    if (window.innerWidth <= 768) {
-        setTimeout(() => {
-            setSheetState('minimized');
-        }, 500);
-    }
-};
-
-// Mobile: Add backdrop for dropdowns
-if (!document.getElementById('dropdownBackdrop')) {
-    const backdrop = document.createElement('div');
-    backdrop.id = 'dropdownBackdrop';
-    backdrop.className = 'dropdown-backdrop';
-    backdrop.addEventListener('click', closeOtherDropdowns);
-    document.body.insertBefore(backdrop, document.body.firstChild);
-}
-
-// Update dropdown visibility to show backdrop on mobile
-const originalCloseOtherDropdowns = closeOtherDropdowns;
-closeOtherDropdowns = function(exceptId) {
-    originalCloseOtherDropdowns(exceptId);
-    
-    // Hide backdrop if all dropdowns are closed
-    if (window.innerWidth <= 768) {
-        const backdrop = document.getElementById('dropdownBackdrop');
-        const anyVisible = document.querySelector('.filter-dropdown.visible');
-        if (backdrop) {
-            backdrop.classList.toggle('visible', !!anyVisible);
-        }
-    }
 };
 
 
