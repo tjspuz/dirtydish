@@ -808,9 +808,26 @@
                 right: 12px;
                 border-radius: 12px;
                 padding: 12px;
-                box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+                background: transparent;  /* FIXED: Transparent background */
+                box-shadow: none;  /* FIXED: No shadow */
                 z-index: 1001;
                 flex-direction: column;
+            }
+            
+            /* Individual elements get white backgrounds */
+            .search-box {
+                padding: 12px 100px 12px 44px;
+                font-size: 0.95rem;
+                background: white;  /* White background on search box */
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            }
+            
+            .filter-btn {
+                padding: 8px 14px;
+                font-size: 0.85rem;
+                flex-shrink: 0;
+                background: white;  /* White background on buttons */
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             }
             
             .search-wrapper {
@@ -844,12 +861,6 @@
             
             .filter-buttons::-webkit-scrollbar {
                 display: none;
-            }
-            
-            .filter-btn {
-                padding: 8px 14px;
-                font-size: 0.85rem;
-                flex-shrink: 0;
             }
             
             .clear-all-btn {
@@ -926,13 +937,15 @@
             
             /* Dropdown adjustments for mobile */
             .filter-dropdown {
-                position: fixed;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
+                position: fixed !important;  /* FIXED: Force fixed positioning */
+                left: 50% !important;
+                top: 50% !important;
+                transform: translate(-50%, -50%) !important;
                 max-width: 90%;
                 max-height: 70vh;
                 border-radius: 16px;
+                z-index: 2001 !important;  /* FIXED: Above everything */
+            }
             }
             
             .filter-dropdown.visible {
@@ -957,8 +970,8 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: rgba(0,0,0,0.4);
-                z-index: 1999;
+                background: rgba(0,0,0,0.5);  /* FIXED: Darker for visibility */
+                z-index: 2000;  /* FIXED: Below dropdown (2001) but above panel */
                 display: none;
             }
             
@@ -1979,6 +1992,14 @@ function setupFilterDropdowns() {
         e.stopPropagation();
         riskDropdown.classList.toggle('visible');
         closeOtherDropdowns('riskDropdown');
+        
+        // FIXED: Show backdrop on mobile
+        if (window.innerWidth <= 768) {
+            const backdrop = document.getElementById('dropdownBackdrop');
+            if (backdrop) {
+                backdrop.classList.add('visible');
+            }
+        }
     });
     
     riskDropdown.querySelectorAll('.filter-option').forEach(option => {
@@ -2021,6 +2042,14 @@ function setupFilterDropdowns() {
         e.stopPropagation();
         typeDropdown.classList.toggle('visible');
         closeOtherDropdowns('typeDropdown');
+        
+        // FIXED: Show backdrop on mobile
+        if (window.innerWidth <= 768) {
+            const backdrop = document.getElementById('dropdownBackdrop');
+            if (backdrop) {
+                backdrop.classList.add('visible');
+            }
+        }
     });
     
     typeDropdown.querySelectorAll('.filter-option').forEach(option => {
@@ -2042,6 +2071,14 @@ function setupFilterDropdowns() {
         e.stopPropagation();
         cityDropdown.classList.toggle('visible');
         closeOtherDropdowns('cityDropdown');
+        
+        // FIXED: Show backdrop on mobile
+        if (window.innerWidth <= 768) {
+            const backdrop = document.getElementById('dropdownBackdrop');
+            if (backdrop) {
+                backdrop.classList.add('visible');
+            }
+        }
     });
     
     cityDropdown.querySelectorAll('.filter-option').forEach(option => {
@@ -2063,6 +2100,14 @@ function setupFilterDropdowns() {
         e.stopPropagation();
         sortDropdown.classList.toggle('visible');
         closeOtherDropdowns('sortDropdown');
+        
+        // FIXED: Show backdrop on mobile
+        if (window.innerWidth <= 768) {
+            const backdrop = document.getElementById('dropdownBackdrop');
+            if (backdrop) {
+                backdrop.classList.add('visible');
+            }
+        }
     });
     
     sortDropdown.querySelectorAll('.filter-option').forEach(option => {
@@ -2349,10 +2394,12 @@ function initBottomSheet() {
     const sheet = document.getElementById('resultsSidebar');
     
     function handleTouchStart(e) {
-        // Only handle touches in top 60px (handle area)
+        // FIXED: Allow dragging from entire top area (stats section)
         const touch = e.touches[0];
         const rect = sheet.getBoundingClientRect();
-        if (touch.clientY - rect.top > 60) return;
+        
+        // Can drag from top 200px (entire stats area)
+        if (touch.clientY - rect.top > 200) return;
         
         isDragging = true;
         startY = touch.clientY;
@@ -2365,8 +2412,11 @@ function initBottomSheet() {
         if (!isDragging) return;
         
         const touch = e.touches[0];
-        const deltaY = startY - touch.clientY;
-        const newHeight = startHeight + deltaY;
+        // FIXED: Inverted delta calculation
+        // Dragging DOWN (positive deltaY) should DECREASE height
+        // Dragging UP (negative deltaY) should INCREASE height
+        const deltaY = touch.clientY - startY;
+        const newHeight = startHeight - deltaY;  // FIXED: Subtract delta
         
         // Constrain height
         const minHeight = 180;
@@ -2387,10 +2437,11 @@ function initBottomSheet() {
         const currentHeight = sheet.offsetHeight;
         const windowHeight = window.innerHeight;
         
+        // FIXED: Better snap thresholds
         // Determine which state to snap to based on height
-        if (currentHeight < windowHeight * 0.25) {
+        if (currentHeight < windowHeight * 0.3) {
             setSheetState('minimized');
-        } else if (currentHeight < windowHeight * 0.65) {
+        } else if (currentHeight < windowHeight * 0.7) {
             setSheetState('half');
         } else {
             setSheetState('expanded');
