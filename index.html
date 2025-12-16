@@ -320,15 +320,62 @@
         /* Stats container */
         .stats-container {
             background: linear-gradient(135deg, var(--primary) 0%, #979797 100%);
-            padding: 16px;
             color: white;
             border-radius: 8px 8px 0 0;
+        }
+        
+        /* NEW: Stats header with collapse toggle */
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            user-select: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stats-header:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .stats-header h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+        
+        .collapse-icon {
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+        }
+        
+        /* Rotate arrow when collapsed */
+        .stats-container.collapsed .collapse-icon {
+            transform: rotate(-180deg);
+        }
+        
+        /* NEW: Stats content wrapper for collapse animation */
+        .stats-content {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+            opacity: 1;
+        }
+        
+        .stats-container.collapsed .stats-content {
+            max-height: 0;
+            opacity: 0;
         }
         
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
+            padding: 16px;
+            padding-top: 12px;
         }
         
         .stat-item {
@@ -349,7 +396,7 @@
         
         /* Gauge sections */
         .gauge-section {
-            margin-top: 16px;
+            margin: 0 16px 16px 16px;
             position: relative;  /* Added for tooltip positioning context */
         }
         
@@ -915,11 +962,23 @@
             
             /* Adjust stats for mobile */
             .stats-container {
-                padding: 24px 16px 16px;
+                padding-bottom: 12px;
+            }
+            
+            .stats-header {
+                padding: 16px 16px 12px;
+            }
+            
+            .stats-grid {
+                padding: 12px 16px;
             }
             
             .stat-value {
                 font-size: 1.5rem;
+            }
+            
+            .gauge-section {
+                margin: 0 16px 12px 16px;
             }
             
             .gauge-bar {
@@ -1091,60 +1150,69 @@
 
 <!-- Results sidebar -->
 <div class="results-sidebar" id="resultsSidebar">
-    <div class="stats-container">
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-label">Viewing</div>
-                <div class="stat-value" id="stat-visible">0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Total</div>
-                <div class="stat-value" id="stat-total">0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Avg. Risk Score</div>
-                <div class="stat-value" id="stat-avg">0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Avg. Violation Count</div>
-                <div class="stat-value" id="stat-violations">0</div>
-            </div>
+    <div class="stats-container" id="statsContainer">
+        <!-- NEW: Collapsible header -->
+        <div class="stats-header" onclick="toggleStatsCollapse()">
+            <h3>Statistics</h3>
+            <span class="collapse-icon">▼</span>
         </div>
         
-        <!-- Violation Type Gauge -->
-        <div class="gauge-section">
-            <div class="gauge-label">Violation Types</div>
-            <div class="gauge-bar" id="violationGauge">
-                <div class="gauge-segment viol-high" data-type="HIGH" data-label="High" style="width: 0%">
-                    <span class="gauge-count">0</span>
+        <!-- NEW: Collapsible content wrapper -->
+        <div class="stats-content">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Viewing</div>
+                    <div class="stat-value" id="stat-visible">0</div>
                 </div>
-                <div class="gauge-segment viol-medium" data-type="MEDIUM" data-label="Medium" style="width: 0%">
-                    <span class="gauge-count">0</span>
+                <div class="stat-item">
+                    <div class="stat-label">Total</div>
+                    <div class="stat-value" id="stat-total">0</div>
                 </div>
-                <div class="gauge-segment viol-low" data-type="LOW" data-label="Low" style="width: 0%">
-                    <span class="gauge-count">0</span>
+                <div class="stat-item">
+                    <div class="stat-label">Avg. Risk Score</div>
+                    <div class="stat-value" id="stat-avg">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Avg. Violation Count</div>
+                    <div class="stat-value" id="stat-violations">0</div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Risk Overview Gauge -->
-        <div class="gauge-section">
-            <div class="gauge-label">Risk Overview</div>
-            <div class="gauge-bar" id="riskGauge">
-                <div class="gauge-segment risk-none" data-risk="NONE" data-label="None" style="width: 0%">
-                    <span class="gauge-count">0</span>
+            
+            <!-- Violation Type Gauge -->
+            <div class="gauge-section">
+                <div class="gauge-label">Violation Types</div>
+                <div class="gauge-bar" id="violationGauge">
+                    <div class="gauge-segment viol-high" data-type="HIGH" data-label="High" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
+                    <div class="gauge-segment viol-medium" data-type="MEDIUM" data-label="Medium" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
+                    <div class="gauge-segment viol-low" data-type="LOW" data-label="Low" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
                 </div>
-                <div class="gauge-segment risk-minor" data-risk="MINOR" data-label="Minor" style="width: 0%">
-                    <span class="gauge-count">0</span>
-                </div>
-                <div class="gauge-segment risk-moderate" data-risk="MODERATE" data-label="Moderate" style="width: 0%">
-                    <span class="gauge-count">0</span>
-                </div>
-                <div class="gauge-segment risk-major" data-risk="MAJOR" data-label="Major" style="width: 0%">
-                    <span class="gauge-count">0</span>
-                </div>
-                <div class="gauge-segment risk-critical" data-risk="CRITICAL" data-label="Critical" style="width: 0%">
-                    <span class="gauge-count">0</span>
+            </div>
+            
+            <!-- Risk Overview Gauge -->
+            <div class="gauge-section">
+                <div class="gauge-label">Risk Overview</div>
+                <div class="gauge-bar" id="riskGauge">
+                    <div class="gauge-segment risk-none" data-risk="NONE" data-label="None" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
+                    <div class="gauge-segment risk-minor" data-risk="MINOR" data-label="Minor" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
+                    <div class="gauge-segment risk-moderate" data-risk="MODERATE" data-label="Moderate" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
+                    <div class="gauge-segment risk-major" data-risk="MAJOR" data-label="Major" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
+                    <div class="gauge-segment risk-critical" data-risk="CRITICAL" data-label="Critical" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1181,6 +1249,12 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 <script>
+// NEW: Toggle function for stats collapse
+function toggleStatsCollapse() {
+    const statsContainer = document.getElementById('statsContainer');
+    statsContainer.classList.toggle('collapsed');
+}
+
 // Global state
 let map, markersCluster, allData = [];
 let currentRiskFilter = 'all';
