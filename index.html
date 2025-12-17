@@ -954,7 +954,27 @@
             }
             
             .filter-buttons {
-                flex-wrap: wrap;
+                display: flex;
+                gap: 8px;
+                overflow-x: auto;
+                overflow-y: visible;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+                flex-wrap: nowrap;
+                padding-right: 10px;
+            }
+            
+            .filter-buttons::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .filter-btn {
+                flex-shrink: 0;
+            }
+            
+            .clear-all-btn {
+                flex-shrink: 0;
             }
             
             .results-sidebar {
