@@ -356,7 +356,7 @@
         
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 12px;
         }
         
@@ -876,8 +876,7 @@
             type="text" 
             id="searchInput" 
             class="search-box" 
-            placeholder="Name, city, type, address, keywords
-            autocomplete="off"
+            placeholder="Name, city, type, address, keywords"
         >
         <span class="search-count" id="searchCount">
             <span id="matchCount">0</span> matches
@@ -949,18 +948,14 @@
         <div class="stats-grid">
             <div class="stat-item">
                 <div class="stat-label">Viewing</div>
-                <div class="stat-value" id="stat-visible">0</div>
+                <div class="stat-value"><span id="stat-visible">0</span>/<span id="stat-total">0</span></div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">Total</div>
-                <div class="stat-value" id="stat-total">0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Avg. Risk Score</div>
+                <div class="stat-label">Avg. Score</div>
                 <div class="stat-value" id="stat-avg">0</div>
             </div>
             <div class="stat-item">
-                <div class="stat-label">Avg. Violation Count</div>
+                <div class="stat-label">Avg. Violations</div>
                 <div class="stat-value" id="stat-violations">0</div>
             </div>
         </div>
@@ -1868,7 +1863,7 @@ function setupFilterDropdowns() {
                 filterValue.classList.remove('default');
                 let text = option.textContent;
                 // Truncate if longer than 10 characters
-                if (text.length > 10) {
+                if (text.length > 8) {
                     text = text.substring(0, 10) + '...';
                 }
                 filterValue.textContent = text;
