@@ -1073,11 +1073,11 @@
                     <div class="stat-value"><span id="stat-visible">0</span>/<span id="stat-total">0</span></div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">Risk Score</div>
+                    <div class="stat-label">Avg. Risk Score</div>
                     <div class="stat-value" id="stat-avg">0</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">Violations</div>
+                    <div class="stat-label">Avg. Violation Count</div>
                     <div class="stat-value" id="stat-violations">0</div>
                 </div>
             </div>
@@ -1127,8 +1127,8 @@
     
     <div class="results-list" id="resultsList"></div>
     
-    <div class="legend-container">
-        <div class="legend-header" onclick="toggleLegend()">
+    <div class="legend-container collapsed">
+        <div class="legend-header collapsed" onclick="toggleLegend()">
             <div class="legend-title-with-dots">
                 <span class="legend-title">Risk Level Guide</span>
                 <div class="legend-dots-inline">
@@ -1139,9 +1139,9 @@
                     <span class="dot-inline" style="background: var(--color-critical);"></span>
                 </div>
             </div>
-            <div class="legend-toggle" id="legendToggle">▼</div>
+            <div class="legend-toggle collapsed" id="legendToggle">▼</div>
         </div>
-        <div class="legend-content" id="legendContent">
+        <div class="legend-content collapsed" id="legendContent">
             <div class="legend-row">
                 <span class="dot" style="background: var(--color-none);"></span>
                 <strong>None</strong> – No violations (0 pts)
@@ -2247,9 +2247,29 @@ function populateCityFilter() {
     });
 }
 
+// Initialize stats state based on device
+function initializeStatsState() {
+    // Detect mobile devices
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                     || window.innerWidth <= 768;
+    
+    if (isMobile) {
+        // Collapse stats on mobile
+        const container = document.getElementById('statsContainer');
+        const gauges = document.getElementById('statsGauges');
+        const toggle = document.getElementById('statsToggle');
+        
+        container.classList.add('collapsed');
+        gauges.classList.add('collapsed');
+        toggle.classList.add('collapsed');
+    }
+    // Desktop: stats remain expanded (default state)
+}
+
 // Initialize
 initMap();
 setupFilterDropdowns();
+initializeStatsState();
 
 // Load data
 fetch('restaurants-geocoded.json')
