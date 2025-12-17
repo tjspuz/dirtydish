@@ -155,7 +155,7 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            flex-shrink: 0;  /* Don't allow shrinking - enable scroll on mobile instead */
+            flex-shrink: 1;  /* Allow buttons to shrink if needed */
         }
         
         /* Default label (unselected) - light gray */
@@ -947,45 +947,14 @@
                 top: 10px;
                 left: 10px;
                 right: 10px;
-                overflow: visible;  /* Allow dropdowns to extend beyond container */
             }
             
             .search-wrapper {
                 width: 100%;
             }
             
-            /* Google Maps style horizontal scrolling for filter buttons */
             .filter-buttons {
-                flex-wrap: nowrap;  /* Never wrap on mobile */
-                overflow-x: auto;
-                overflow-y: visible;  /* CRITICAL: Allow dropdowns to show below */
-                -webkit-overflow-scrolling: touch;  /* Smooth scrolling on iOS */
-                scrollbar-width: none;  /* Hide scrollbar on Firefox */
-                -ms-overflow-style: none;  /* Hide scrollbar on IE/Edge */
-                padding-bottom: 4px;  /* Space for shadows */
-                margin-right: -10px;  /* Allow buttons to extend to edge */
-                padding-right: 10px;  /* Compensate for negative margin */
-                touch-action: pan-x;  /* Allow horizontal scroll but preserve button clicks */
-            }
-            
-            /* Hide scrollbar on Chrome/Safari */
-            .filter-buttons::-webkit-scrollbar {
-                display: none;
-            }
-            
-            /* Prevent buttons from shrinking on mobile */
-            .filter-btn {
-                flex-shrink: 0;  /* Don't shrink - allow horizontal scroll instead */
-                touch-action: manipulation;  /* Enable fast tap without 300ms delay */
-            }
-            
-            .clear-all-btn {
-                flex-shrink: 0;  /* Don't shrink clear button either */
-            }
-            
-            /* Ensure dropdowns appear above everything on mobile */
-            .filter-dropdown {
-                z-index: 9999;  /* Very high z-index for mobile */
+                flex-wrap: wrap;
             }
             
             .results-sidebar {
