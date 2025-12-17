@@ -947,6 +947,7 @@
                 top: 10px;
                 left: 10px;
                 right: 10px;
+                overflow: visible;  /* Allow dropdowns to extend beyond container */
             }
             
             .search-wrapper {
@@ -957,7 +958,7 @@
             .filter-buttons {
                 flex-wrap: nowrap;  /* Never wrap on mobile */
                 overflow-x: auto;
-                overflow-y: hidden;
+                overflow-y: visible;  /* CRITICAL: Allow dropdowns to show below */
                 -webkit-overflow-scrolling: touch;  /* Smooth scrolling on iOS */
                 scrollbar-width: none;  /* Hide scrollbar on Firefox */
                 -ms-overflow-style: none;  /* Hide scrollbar on IE/Edge */
@@ -978,6 +979,11 @@
             
             .clear-all-btn {
                 flex-shrink: 0;  /* Don't shrink clear button either */
+            }
+            
+            /* Ensure dropdowns appear above everything on mobile */
+            .filter-dropdown {
+                z-index: 9999;  /* Very high z-index for mobile */
             }
             
             .results-sidebar {
