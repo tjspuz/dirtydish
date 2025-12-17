@@ -175,6 +175,17 @@
             display: none;
         }
         
+        /* Gray out sort button in default state */
+        #sortBtn.default-state {
+            color: #a0a0a0;
+        }
+        
+        #sortBtn.default-state .filter-value,
+        #sortBtn.default-state #sortDirection,
+        #sortBtn.default-state i {
+            color: #a0a0a0;
+        }
+        
         .filter-btn:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
             transform: translateY(-1px);
@@ -916,7 +927,7 @@
             </div>
         </button>
         
-        <button class="filter-btn" id="sortBtn">
+        <button class="filter-btn default-state" id="sortBtn">
             <i class="fa-solid fa-filter"></i>
             <span class="filter-value" id="sortText">Name</span> <span id="sortDirection">↓</span>
             <div class="filter-dropdown" id="sortDropdown">
@@ -1984,6 +1995,9 @@ function setupFilterDropdowns() {
         option.addEventListener('click', () => {
             const newSort = option.dataset.value;
             
+            // Remove default state class when any sort is clicked
+            sortBtn.classList.remove('default-state');
+            
             if (newSort === currentSort) {
                 // Toggle direction
                 sortAscending = !sortAscending;
@@ -2039,6 +2053,7 @@ function closeOtherDropdowns(exceptId) {
 function populateCityFilter() {
     const cities = [...new Set(allData.map(r => r.city).filter(Boolean))].sort();
     const cityDropdown = document.getElementById('cityDropdown');
+    const cityBtn = document.getElementById('cityFilterBtn');
     
     // Keep "All Cities" option
     cities.forEach(city => {
@@ -2051,7 +2066,20 @@ function populateCityFilter() {
             cityDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
             option.classList.add('selected');
             currentCityFilter = city;
-            document.getElementById('cityFilterText').textContent = city;
+            
+            const filterLabel = cityBtn.querySelector('.filter-label');
+            const filterValue = document.getElementById('cityFilterText');
+            
+            // Hide label, show value
+            filterLabel.style.display = 'none';
+            filterValue.classList.remove('default');
+            let text = city;
+            // Truncate if longer than 10 characters
+            if (text.length > 10) {
+                text = text.substring(0, 10) + '...';
+            }
+            filterValue.textContent = text;
+            
             cityDropdown.classList.remove('visible');
             applyFilters();
         });
@@ -2231,6 +2259,8 @@ document.getElementById('clearAllBtn').addEventListener('click', () => {
     document.getElementById('cityFilterText').textContent = '';
     
     // Reset sort button
+    const sortBtn = document.getElementById('sortBtn');
+    sortBtn.classList.add('default-state');
     document.getElementById('sortText').textContent = 'Name';
     document.getElementById('sortDirection').textContent = '↓';
     
