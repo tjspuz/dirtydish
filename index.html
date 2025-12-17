@@ -947,6 +947,7 @@
                 top: 10px;
                 left: 10px;
                 right: 10px;
+                z-index: 10000;  /* Increased for mobile to be above map */
             }
             
             .search-wrapper {
@@ -957,12 +958,13 @@
                 display: flex;
                 gap: 8px;
                 overflow-x: auto;
-                overflow-y: visible;
+                overflow-y: hidden;  /* CHANGED: Hide vertical scroll */
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
                 -ms-overflow-style: none;
                 flex-wrap: nowrap;
                 padding-right: 10px;
+                width: 100%;  /* Ensure full width for scrolling */
             }
             
             .filter-buttons::-webkit-scrollbar {
@@ -971,10 +973,22 @@
             
             .filter-btn {
                 flex-shrink: 0;
+                position: relative;  /* Needed for dropdown positioning */
             }
             
             .clear-all-btn {
                 flex-shrink: 0;
+            }
+            
+            /* Fix dropdown visibility on mobile */
+            .filter-dropdown {
+                z-index: 10001;  /* Above everything on mobile */
+                position: fixed;  /* CRITICAL: Use fixed positioning on mobile */
+                top: auto;        /* Reset top */
+                bottom: auto;     /* Reset bottom */
+                left: 50%;        /* Center horizontally */
+                transform: translateX(-50%);
+                margin-top: 52px; /* Distance below button */
             }
             
             .results-sidebar {
