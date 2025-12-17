@@ -352,12 +352,47 @@
             padding: 16px;
             color: white;
             border-radius: 8px 8px 0 0;
+            transition: padding 0.3s ease;
+        }
+        
+        .stats-container.collapsed {
+            padding: 8px 16px;
+        }
+        
+        .stats-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .stats-header:hover {
+            opacity: 0.95;
+        }
+        
+        .stats-toggle {
+            font-size: 1rem;
+            color: white;
+            transition: transform 0.3s ease;
+            margin-left: 12px;
+            flex-shrink: 0;
+        }
+        
+        .stats-toggle.collapsed {
+            transform: rotate(-90deg);
         }
         
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 12px;
+            flex: 1;
+            transition: gap 0.3s ease;
+        }
+        
+        .stats-container.collapsed .stats-grid {
+            gap: 8px;
         }
         
         .stat-item {
@@ -369,11 +404,34 @@
             opacity: 0.9;
             margin-bottom: 4px;
             text-transform: uppercase;
+            transition: font-size 0.3s ease, margin-bottom 0.3s ease;
+        }
+        
+        .stats-container.collapsed .stat-label {
+            font-size: 0.6rem;
+            margin-bottom: 2px;
         }
         
         .stat-value {
             font-size: 1.5rem;
             font-weight: 800;
+            transition: font-size 0.3s ease;
+        }
+        
+        .stats-container.collapsed .stat-value {
+            font-size: 1rem;
+        }
+        
+        .stats-gauges {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, margin-top 0.3s ease;
+            margin-top: 16px;
+        }
+        
+        .stats-gauges.collapsed {
+            max-height: 0;
+            margin-top: 0;
         }
         
         /* Gauge sections */
@@ -754,14 +812,76 @@
             padding: 16px;
             border-top: 2px solid var(--border);
             border-radius: 0 0 8px 8px;
+            transition: padding 0.3s ease;
+        }
+        
+        .legend-container.collapsed {
+            padding: 8px 16px;
+        }
+        
+        .legend-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            margin-bottom: 10px;
+            transition: margin-bottom 0.3s ease;
+        }
+        
+        .legend-header.collapsed {
+            margin-bottom: 0;
+        }
+        
+        .legend-header:hover {
+            opacity: 0.8;
+        }
+        
+        .legend-title-with-dots {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .legend-title {
             font-size: 0.75rem;
             font-weight: 700;
             color: var(--text-light);
-            margin-bottom: 10px;
             text-transform: uppercase;
+        }
+        
+        .legend-dots-inline {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .dot-inline {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        .legend-toggle {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            transition: transform 0.3s ease;
+        }
+        
+        .legend-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+        
+        .legend-content {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .legend-content.collapsed {
+            max-height: 0;
         }
         
         .legend-row {
@@ -876,7 +996,8 @@
             type="text" 
             id="searchInput" 
             class="search-box" 
-            placeholder="Name, city, type, address, keywords"
+            placeholder="Name, city, type, address, keywords
+            autocomplete="off"
         >
         <span class="search-count" id="searchCount">
             <span id="matchCount">0</span> matches
@@ -944,56 +1065,61 @@
 
 <!-- Results sidebar -->
 <div class="results-sidebar" id="resultsSidebar">
-    <div class="stats-container">
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-label">Viewing</div>
-                <div class="stat-value"><span id="stat-visible">0</span>/<span id="stat-total">0</span></div>
+    <div class="stats-container" id="statsContainer">
+        <div class="stats-header" onclick="toggleStats()">
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Viewing</div>
+                    <div class="stat-value"><span id="stat-visible">0</span>/<span id="stat-total">0</span></div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Avg. Risk Score</div>
+                    <div class="stat-value" id="stat-avg">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Avg. Violations</div>
+                    <div class="stat-value" id="stat-violations">0</div>
+                </div>
             </div>
-            <div class="stat-item">
-                <div class="stat-label">Avg. Score</div>
-                <div class="stat-value" id="stat-avg">0</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-label">Avg. Violations</div>
-                <div class="stat-value" id="stat-violations">0</div>
-            </div>
+            <div class="stats-toggle" id="statsToggle">▼</div>
         </div>
         
-        <!-- Violation Type Gauge -->
-        <div class="gauge-section">
-            <div class="gauge-label">Violation Types</div>
-            <div class="gauge-bar" id="violationGauge">
-                <div class="gauge-segment viol-high" data-type="HIGH" data-label="High" style="width: 0%">
-                    <span class="gauge-count">0</span>
-                </div>
-                <div class="gauge-segment viol-medium" data-type="MEDIUM" data-label="Medium" style="width: 0%">
-                    <span class="gauge-count">0</span>
-                </div>
-                <div class="gauge-segment viol-low" data-type="LOW" data-label="Low" style="width: 0%">
-                    <span class="gauge-count">0</span>
+        <div class="stats-gauges" id="statsGauges">
+            <!-- Violation Type Gauge -->
+            <div class="gauge-section">
+                <div class="gauge-label">Violation Types</div>
+                <div class="gauge-bar" id="violationGauge">
+                    <div class="gauge-segment viol-high" data-type="HIGH" data-label="High" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
+                    <div class="gauge-segment viol-medium" data-type="MEDIUM" data-label="Medium" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
+                    <div class="gauge-segment viol-low" data-type="LOW" data-label="Low" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Risk Overview Gauge -->
-        <div class="gauge-section">
-            <div class="gauge-label">Risk Overview</div>
-            <div class="gauge-bar" id="riskGauge">
-                <div class="gauge-segment risk-none" data-risk="NONE" data-label="None" style="width: 0%">
-                    <span class="gauge-count">0</span>
-                </div>
-                <div class="gauge-segment risk-minor" data-risk="MINOR" data-label="Minor" style="width: 0%">
-                    <span class="gauge-count">0</span>
-                </div>
-                <div class="gauge-segment risk-moderate" data-risk="MODERATE" data-label="Moderate" style="width: 0%">
-                    <span class="gauge-count">0</span>
-                </div>
-                <div class="gauge-segment risk-major" data-risk="MAJOR" data-label="Major" style="width: 0%">
-                    <span class="gauge-count">0</span>
-                </div>
-                <div class="gauge-segment risk-critical" data-risk="CRITICAL" data-label="Critical" style="width: 0%">
-                    <span class="gauge-count">0</span>
+            
+            <!-- Risk Overview Gauge -->
+            <div class="gauge-section">
+                <div class="gauge-label">Risk Overview</div>
+                <div class="gauge-bar" id="riskGauge">
+                    <div class="gauge-segment risk-none" data-risk="NONE" data-label="None" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
+                    <div class="gauge-segment risk-minor" data-risk="MINOR" data-label="Minor" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
+                    <div class="gauge-segment risk-moderate" data-risk="MODERATE" data-label="Moderate" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
+                    <div class="gauge-segment risk-major" data-risk="MAJOR" data-label="Major" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
+                    <div class="gauge-segment risk-critical" data-risk="CRITICAL" data-label="Critical" style="width: 0%">
+                        <span class="gauge-count">0</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1002,26 +1128,40 @@
     <div class="results-list" id="resultsList"></div>
     
     <div class="legend-container">
-        <div class="legend-title">Risk Level Guide</div>
-        <div class="legend-row">
-            <span class="dot" style="background: var(--color-none);"></span>
-            <strong>None</strong> – No violations (0 pts)
+        <div class="legend-header" onclick="toggleLegend()">
+            <div class="legend-title-with-dots">
+                <span class="legend-title">Risk Level Guide</span>
+                <div class="legend-dots-inline">
+                    <span class="dot-inline" style="background: var(--color-none);"></span>
+                    <span class="dot-inline" style="background: var(--color-minor);"></span>
+                    <span class="dot-inline" style="background: var(--color-moderate);"></span>
+                    <span class="dot-inline" style="background: var(--color-major);"></span>
+                    <span class="dot-inline" style="background: var(--color-critical);"></span>
+                </div>
+            </div>
+            <div class="legend-toggle" id="legendToggle">▼</div>
         </div>
-        <div class="legend-row">
-            <span class="dot" style="background: var(--color-minor);"></span>
-            <strong>Minor</strong> – Few issues (1-14 pts)
-        </div>
-        <div class="legend-row">
-            <span class="dot" style="background: var(--color-moderate);"></span>
-            <strong>Moderate</strong> – Multiple issues (15-50 pts)
-        </div>
-        <div class="legend-row">
-            <span class="dot" style="background: var(--color-major);"></span>
-            <strong>Major</strong> – Serious concerns (51-75 pts)
-        </div>
-        <div class="legend-row">
-            <span class="dot" style="background: var(--color-critical);"></span>
-            <strong>Critical</strong> – Major hazards (76+ pts)
+        <div class="legend-content" id="legendContent">
+            <div class="legend-row">
+                <span class="dot" style="background: var(--color-none);"></span>
+                <strong>None</strong> – No violations (0 pts)
+            </div>
+            <div class="legend-row">
+                <span class="dot" style="background: var(--color-minor);"></span>
+                <strong>Minor</strong> – Few issues (1-14 pts)
+            </div>
+            <div class="legend-row">
+                <span class="dot" style="background: var(--color-moderate);"></span>
+                <strong>Moderate</strong> – Multiple issues (15-50 pts)
+            </div>
+            <div class="legend-row">
+                <span class="dot" style="background: var(--color-major);"></span>
+                <strong>Major</strong> – Serious concerns (51-75 pts)
+            </div>
+            <div class="legend-row">
+                <span class="dot" style="background: var(--color-critical);"></span>
+                <strong>Critical</strong> – Major hazards (76+ pts)
+            </div>
         </div>
     </div>
 </div>
@@ -1030,6 +1170,30 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 <script>
+// Toggle legend visibility
+function toggleLegend() {
+    const container = document.querySelector('.legend-container');
+    const header = document.querySelector('.legend-header');
+    const content = document.getElementById('legendContent');
+    const toggle = document.getElementById('legendToggle');
+    
+    container.classList.toggle('collapsed');
+    header.classList.toggle('collapsed');
+    content.classList.toggle('collapsed');
+    toggle.classList.toggle('collapsed');
+}
+
+// Toggle stats visibility
+function toggleStats() {
+    const container = document.getElementById('statsContainer');
+    const gauges = document.getElementById('statsGauges');
+    const toggle = document.getElementById('statsToggle');
+    
+    container.classList.toggle('collapsed');
+    gauges.classList.toggle('collapsed');
+    toggle.classList.toggle('collapsed');
+}
+
 // Global state
 let map, markersCluster, allData = [];
 let currentRiskFilter = 'all';
@@ -1863,7 +2027,7 @@ function setupFilterDropdowns() {
                 filterValue.classList.remove('default');
                 let text = option.textContent;
                 // Truncate if longer than 10 characters
-                if (text.length > 8) {
+                if (text.length > 10) {
                     text = text.substring(0, 10) + '...';
                 }
                 filterValue.textContent = text;
