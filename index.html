@@ -965,6 +965,7 @@
                 padding-bottom: 4px;  /* Space for shadows */
                 margin-right: -10px;  /* Allow buttons to extend to edge */
                 padding-right: 10px;  /* Compensate for negative margin */
+                touch-action: pan-x;  /* Allow horizontal scroll but preserve button clicks */
             }
             
             /* Hide scrollbar on Chrome/Safari */
@@ -975,6 +976,7 @@
             /* Prevent buttons from shrinking on mobile */
             .filter-btn {
                 flex-shrink: 0;  /* Don't shrink - allow horizontal scroll instead */
+                touch-action: manipulation;  /* Enable fast tap without 300ms delay */
             }
             
             .clear-all-btn {
