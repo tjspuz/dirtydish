@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -155,6 +156,23 @@
             align-items: center;
             gap: 4px;
             flex-shrink: 1;  /* Allow buttons to shrink if needed */
+        }
+        
+        /* Default label (unselected) - light gray */
+        .filter-btn .filter-label {
+            color: #a0a0a0;
+            font-weight: 500;
+        }
+        
+        /* Selected text - dark */
+        .filter-btn .filter-value {
+            color: var(--text);
+            font-weight: 600;
+        }
+        
+        /* When showing default state, hide the value */
+        .filter-btn .filter-value.default {
+            display: none;
         }
         
         .filter-btn:hover {
@@ -858,7 +876,8 @@
     
     <div class="filter-buttons">
         <button class="filter-btn" id="riskFilterBtn">
-            Risk: <span id="riskFilterText">(All)</span>
+            <span class="filter-label">Risk</span>
+            <span class="filter-value default" id="riskFilterText"></span>
             <div class="filter-dropdown" id="riskDropdown">
                 <div class="filter-option selected" data-value="all">All</div>
                 <div class="filter-option" data-value="NONE">None</div>
@@ -870,7 +889,8 @@
         </button>
         
         <button class="filter-btn" id="typeFilterBtn">
-            Type: <span id="typeFilterText">(All)</span>
+            <span class="filter-label">Type</span>
+            <span class="filter-value default" id="typeFilterText"></span>
             <div class="filter-dropdown" id="typeDropdown">
                 <div class="filter-option selected" data-value="all">All</div>
                 <div class="filter-option" data-value="Restaurant">Restaurant</div>
@@ -888,7 +908,8 @@
         </button>
         
         <button class="filter-btn" id="cityFilterBtn">
-            City: <span id="cityFilterText">(All)</span>
+            <span class="filter-label">City</span>
+            <span class="filter-value default" id="cityFilterText"></span>
             <div class="filter-dropdown" id="cityDropdown">
                 <div class="filter-option selected" data-value="all">All</div>
                 <!-- Cities populated dynamically -->
@@ -896,7 +917,8 @@
         </button>
         
         <button class="filter-btn" id="sortBtn">
-            Sort: <span id="sortText">Name</span> <span id="sortDirection">↓</span>
+            <i class="fa-solid fa-filter"></i>
+            <span class="filter-value" id="sortText">Name</span> <span id="sortDirection">↓</span>
             <div class="filter-dropdown" id="sortDropdown">
                 <div class="filter-option selected sort-asc" data-value="name">Name</div>
                 <div class="filter-option" data-value="date">Inspection Date</div>
@@ -1820,7 +1842,26 @@ function setupFilterDropdowns() {
             riskDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
             option.classList.add('selected');
             currentRiskFilter = option.dataset.value;
-            document.getElementById('riskFilterText').textContent = option.dataset.value === 'all' ? '(All)' : option.textContent;
+            
+            const filterLabel = riskBtn.querySelector('.filter-label');
+            const filterValue = document.getElementById('riskFilterText');
+            
+            if (option.dataset.value === 'all') {
+                // Show default label, hide value
+                filterLabel.style.display = 'inline';
+                filterValue.classList.add('default');
+                filterValue.textContent = '';
+            } else {
+                // Hide label, show value
+                filterLabel.style.display = 'none';
+                filterValue.classList.remove('default');
+                let text = option.textContent;
+                // Truncate if longer than 10 characters
+                if (text.length > 10) {
+                    text = text.substring(0, 10) + '...';
+                }
+                filterValue.textContent = text;
+            }
             
             const riskGauge = document.getElementById('riskGauge');
             
@@ -1862,7 +1903,27 @@ function setupFilterDropdowns() {
             typeDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
             option.classList.add('selected');
             currentTypeFilter = option.dataset.value;
-            document.getElementById('typeFilterText').textContent = option.dataset.value === 'all' ? '(All)' : option.textContent;
+            
+            const filterLabel = typeBtn.querySelector('.filter-label');
+            const filterValue = document.getElementById('typeFilterText');
+            
+            if (option.dataset.value === 'all') {
+                // Show default label, hide value
+                filterLabel.style.display = 'inline';
+                filterValue.classList.add('default');
+                filterValue.textContent = '';
+            } else {
+                // Hide label, show value
+                filterLabel.style.display = 'none';
+                filterValue.classList.remove('default');
+                let text = option.textContent;
+                // Truncate if longer than 10 characters
+                if (text.length > 10) {
+                    text = text.substring(0, 10) + '...';
+                }
+                filterValue.textContent = text;
+            }
+            
             typeDropdown.classList.remove('visible');
             applyFilters();
         });
@@ -1883,7 +1944,27 @@ function setupFilterDropdowns() {
             cityDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
             option.classList.add('selected');
             currentCityFilter = option.dataset.value;
-            document.getElementById('cityFilterText').textContent = option.dataset.value === 'all' ? '(All)' : option.textContent;
+            
+            const filterLabel = cityBtn.querySelector('.filter-label');
+            const filterValue = document.getElementById('cityFilterText');
+            
+            if (option.dataset.value === 'all') {
+                // Show default label, hide value
+                filterLabel.style.display = 'inline';
+                filterValue.classList.add('default');
+                filterValue.textContent = '';
+            } else {
+                // Hide label, show value
+                filterLabel.style.display = 'none';
+                filterValue.classList.remove('default');
+                let text = option.textContent;
+                // Truncate if longer than 10 characters
+                if (text.length > 10) {
+                    text = text.substring(0, 10) + '...';
+                }
+                filterValue.textContent = text;
+            }
+            
             cityDropdown.classList.remove('visible');
             applyFilters();
         });
@@ -2131,10 +2212,25 @@ document.getElementById('clearAllBtn').addEventListener('click', () => {
     document.querySelector('#cityDropdown .filter-option[data-value="all"]').classList.add('selected');
     document.querySelector('#sortDropdown .filter-option[data-value="name"]').classList.add('selected');
     
-    // Update button texts
-    document.getElementById('riskFilterText').textContent = '(All)';
-    document.getElementById('typeFilterText').textContent = '(All)';
-    document.getElementById('cityFilterText').textContent = '(All)';
+    // Reset button appearances to default state
+    const riskBtn = document.getElementById('riskFilterBtn');
+    const typeBtn = document.getElementById('typeFilterBtn');
+    const cityBtn = document.getElementById('cityFilterBtn');
+    
+    // Show labels, hide values for filter buttons
+    riskBtn.querySelector('.filter-label').style.display = 'inline';
+    document.getElementById('riskFilterText').classList.add('default');
+    document.getElementById('riskFilterText').textContent = '';
+    
+    typeBtn.querySelector('.filter-label').style.display = 'inline';
+    document.getElementById('typeFilterText').classList.add('default');
+    document.getElementById('typeFilterText').textContent = '';
+    
+    cityBtn.querySelector('.filter-label').style.display = 'inline';
+    document.getElementById('cityFilterText').classList.add('default');
+    document.getElementById('cityFilterText').textContent = '';
+    
+    // Reset sort button
     document.getElementById('sortText').textContent = 'Name';
     document.getElementById('sortDirection').textContent = '↓';
     
