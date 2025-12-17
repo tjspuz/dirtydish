@@ -947,48 +947,34 @@
                 top: 10px;
                 left: 10px;
                 right: 10px;
-                z-index: 10000;  /* Increased for mobile to be above map */
             }
             
             .search-wrapper {
                 width: 100%;
             }
             
+            /* Mobile horizontal scrolling */
             .filter-buttons {
-                display: flex;
-                gap: 8px;
+                flex-wrap: nowrap;
                 overflow-x: auto;
-                overflow-y: hidden;  /* CHANGED: Hide vertical scroll */
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
                 -ms-overflow-style: none;
-                flex-wrap: nowrap;
-                padding-right: 10px;
-                width: 100%;  /* Ensure full width for scrolling */
             }
             
             .filter-buttons::-webkit-scrollbar {
                 display: none;
             }
             
-            .filter-btn {
-                flex-shrink: 0;
-                position: relative;  /* Needed for dropdown positioning */
-            }
-            
+            .filter-btn,
             .clear-all-btn {
                 flex-shrink: 0;
             }
             
-            /* Fix dropdown visibility on mobile */
-            .filter-dropdown {
-                z-index: 10001;  /* Above everything on mobile */
-                position: fixed;  /* CRITICAL: Use fixed positioning on mobile */
-                top: auto;        /* Reset top */
-                bottom: auto;     /* Reset bottom */
-                left: 50%;        /* Center horizontally */
-                transform: translateX(-50%);
-                margin-top: 52px; /* Distance below button */
+            /* Mobile dropdown fix - use fixed positioning */
+            .filter-dropdown.visible {
+                position: fixed !important;
+                z-index: 10000 !important;
             }
             
             .results-sidebar {
@@ -2031,6 +2017,16 @@ function showDetails(establishment) {
 
 // Filter dropdown handlers
 function setupFilterDropdowns() {
+    // Helper function to position dropdown on mobile
+    function positionDropdownMobile(button, dropdown) {
+        if (window.innerWidth <= 768) {
+            const rect = button.getBoundingClientRect();
+            dropdown.style.top = `${rect.bottom + 8}px`;
+            dropdown.style.left = `${rect.left + (rect.width / 2)}px`;
+            dropdown.style.transform = 'translateX(-50%)';
+        }
+    }
+    
     // Risk filter
     const riskBtn = document.getElementById('riskFilterBtn');
     const riskDropdown = document.getElementById('riskDropdown');
@@ -2038,6 +2034,9 @@ function setupFilterDropdowns() {
     riskBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         riskDropdown.classList.toggle('visible');
+        if (riskDropdown.classList.contains('visible')) {
+            positionDropdownMobile(riskBtn, riskDropdown);
+        }
         closeOtherDropdowns('riskDropdown');
     });
     
@@ -2099,6 +2098,9 @@ function setupFilterDropdowns() {
     typeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         typeDropdown.classList.toggle('visible');
+        if (typeDropdown.classList.contains('visible')) {
+            positionDropdownMobile(typeBtn, typeDropdown);
+        }
         closeOtherDropdowns('typeDropdown');
     });
     
@@ -2140,6 +2142,9 @@ function setupFilterDropdowns() {
     cityBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         cityDropdown.classList.toggle('visible');
+        if (cityDropdown.classList.contains('visible')) {
+            positionDropdownMobile(cityBtn, cityDropdown);
+        }
         closeOtherDropdowns('cityDropdown');
     });
     
@@ -2181,6 +2186,9 @@ function setupFilterDropdowns() {
     sortBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         sortDropdown.classList.toggle('visible');
+        if (sortDropdown.classList.contains('visible')) {
+            positionDropdownMobile(sortBtn, sortDropdown);
+        }
         closeOtherDropdowns('sortDropdown');
     });
     
