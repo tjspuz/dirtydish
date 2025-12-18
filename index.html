@@ -250,13 +250,13 @@
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.25);
             min-width: 200px;
-            width: max-content;  /* Fit content width */
-            max-width: calc(100vw - 30px);  /* Never exceed screen width (with margin) */
-            max-height: 252px;  /* Exactly 6 rows: (10px + 10px padding + ~22px text) * 6 */
+            max-width: 280px;  /* Prevent too wide */
+            max-height: 400px;
             overflow-y: auto;
             overflow-x: hidden;  /* Prevent horizontal overflow */
             display: none;
             z-index: 1002;
+            word-wrap: break-word;  /* Wrap long text */
         }
         
         /* Popover arrow - positioned near left edge */
@@ -285,9 +285,6 @@
             border-bottom: 1px solid #f0f0f0;
             transition: background 0.2s;
             font-size: 0.9rem;
-            white-space: nowrap;  /* Prevent text wrapping */
-            overflow: hidden;     /* Hide overflow text */
-            text-overflow: ellipsis;  /* Show ... for long text */
         }
         
         .filter-option:last-child {
@@ -973,14 +970,12 @@
             /* Horizontal scroll container */
             .filter-scroll {
                 overflow-x: auto;
-                overflow-y: hidden;  /* CHANGED: Must be hidden, not visible */
+                overflow-y: visible;  /* Allow dropdowns to escape vertically */
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
                 -ms-overflow-style: none;
                 padding-bottom: 420px;  /* Space for dropdowns below */
                 margin-bottom: -420px;  /* Collapse the space */
-                /* Ensure scroll container doesn't block pointer events */
-                position: relative;
             }
             
             .filter-scroll::-webkit-scrollbar {
@@ -1006,16 +1001,9 @@
                 left: 0;  /* Align to left edge of button */
                 transform: none;  /* No centering */
                 z-index: 10000;
-                width: auto;  /* Auto width */
-                max-width: 250px;  /* Cap width to prevent excessive width */
-                min-width: 200px;
+                max-width: calc(100vw - 20px);
+                /* Prevent dropdown from going off right edge */
                 right: auto;
-            }
-            
-            /* Ensure long text wraps in dropdowns on mobile */
-            .filter-dropdown .filter-option {
-                white-space: normal;  /* Allow wrapping on mobile */
-                word-wrap: break-word;
             }
             
             /* Use right positioning if dropdown would go off screen */
