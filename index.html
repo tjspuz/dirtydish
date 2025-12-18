@@ -132,6 +132,11 @@
         }
         
         /* Filter buttons */
+        /* Filter scroll wrapper - desktop has no scroll */
+        .filter-scroll {
+            display: flex;
+        }
+        
         .filter-buttons {
             display: flex;
             gap: 8px;
@@ -953,19 +958,29 @@
                 width: 100%;
             }
             
+            /* Horizontal scroll container */
+            .filter-scroll {
+                overflow-x: auto;
+                overflow-y: visible;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE/Edge */
+            }
+            
+            .filter-scroll::-webkit-scrollbar {
+                display: none; /* Chrome/Safari */
+            }
+            
+            /* Prevent wrapping entirely */
             .filter-buttons {
-                flex-wrap: nowrap;  /* Change from wrap to nowrap */
-                overflow-x: scroll; /* Enable horizontal scroll */
-                -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
+                display: flex;
+                flex-wrap: nowrap;
+                gap: 8px;
+                padding-bottom: 4px;
+                min-width: max-content;
             }
             
-            /* Hide scrollbar but keep functionality */
-            .filter-buttons::-webkit-scrollbar {
-                height: 0;
-                display: none;
-            }
-            
-            /* Prevent buttons from shrinking */
+            /* Ensure buttons never shrink */
             .filter-btn,
             .clear-all-btn {
                 flex-shrink: 0;
@@ -1019,7 +1034,8 @@
         <button class="clear-search" id="clearSearch">✕</button>
     </div>
     
-    <div class="filter-buttons">
+    <div class="filter-scroll">
+        <div class="filter-buttons">
         <button class="filter-btn" id="riskFilterBtn">
             <span class="filter-label">Risk</span>
             <span class="filter-value default" id="riskFilterText"></span>
@@ -1074,6 +1090,7 @@
         
         <!-- Clear All Filters Button -->
         <button class="clear-all-btn" id="clearAllBtn" title="Clear all filters and sorts">✕</button>
+    </div>
     </div>
 </div>
 
