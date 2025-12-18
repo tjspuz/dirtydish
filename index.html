@@ -970,7 +970,7 @@
             /* Horizontal scroll container */
             .filter-scroll {
                 overflow-x: auto;
-                overflow-y: visible;  /* Allow dropdowns to escape vertically */
+                overflow-y: hidden;  /* CRITICAL: Must be hidden, not visible */
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
                 -ms-overflow-style: none;
