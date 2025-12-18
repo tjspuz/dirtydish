@@ -954,7 +954,21 @@
             }
             
             .filter-buttons {
-                flex-wrap: wrap;
+                flex-wrap: nowrap;  /* Change from wrap to nowrap */
+                overflow-x: scroll; /* Enable horizontal scroll */
+                -webkit-overflow-scrolling: touch; /* Smooth iOS scrolling */
+            }
+            
+            /* Hide scrollbar but keep functionality */
+            .filter-buttons::-webkit-scrollbar {
+                height: 0;
+                display: none;
+            }
+            
+            /* Prevent buttons from shrinking */
+            .filter-btn,
+            .clear-all-btn {
+                flex-shrink: 0;
             }
             
             .results-sidebar {
