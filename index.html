@@ -132,7 +132,7 @@
         }
         
         /* Filter buttons */
-        /* Filter scroll wrapper - desktop has no scroll */
+        /* Filter scroll wrapper - no overflow on desktop */
         .filter-scroll {
             display: flex;
         }
@@ -140,8 +140,14 @@
         .filter-buttons {
             display: flex;
             gap: 8px;
-            flex-wrap: nowrap;  /* Changed to prevent wrapping when clear button appears */
+            flex-wrap: nowrap;
             align-items: center;
+        }
+        
+        /* Filter chip - positioning anchor for dropdowns */
+        .filter-chip {
+            position: relative;
+            flex-shrink: 0;
         }
         
         .filter-btn {
@@ -961,27 +967,36 @@
             /* Horizontal scroll container */
             .filter-scroll {
                 overflow-x: auto;
-                overflow-y: visible;
                 -webkit-overflow-scrolling: touch;
-                scrollbar-width: none; /* Firefox */
-                -ms-overflow-style: none; /* IE/Edge */
+                scrollbar-width: none;
+                -ms-overflow-style: none;
             }
             
             .filter-scroll::-webkit-scrollbar {
-                display: none; /* Chrome/Safari */
+                display: none;
             }
             
-            /* Prevent wrapping entirely */
+            /* Filter buttons container */
             .filter-buttons {
-                display: flex;
                 flex-wrap: nowrap;
-                gap: 8px;
-                padding-bottom: 4px;
                 min-width: max-content;
             }
             
-            /* Ensure buttons never shrink */
-            .filter-btn,
+            /* Filter chip is positioning anchor */
+            .filter-chip {
+                position: relative;
+                flex-shrink: 0;
+            }
+            
+            /* Dropdowns positioned relative to chip, escape scroll container */
+            .filter-dropdown {
+                position: absolute;
+                top: calc(100% + 12px);
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 10000;
+            }
+            
             .clear-all-btn {
                 flex-shrink: 0;
             }
@@ -1036,9 +1051,12 @@
     
     <div class="filter-scroll">
         <div class="filter-buttons">
-        <button class="filter-btn" id="riskFilterBtn">
-            <span class="filter-label">Risk</span>
-            <span class="filter-value default" id="riskFilterText"></span>
+            <div class="filter-chip">
+                <button class="filter-btn" id="riskFilterBtn">
+                    <span class="filter-label">Risk</span>
+                    <span class="filter-value default" id="riskFilterText"></span>
+                </button>
+            </div>
             <div class="filter-dropdown" id="riskDropdown">
                 <div class="filter-option selected" data-value="all">All</div>
                 <div class="filter-option" data-value="NONE">None</div>
@@ -1047,11 +1065,13 @@
                 <div class="filter-option" data-value="MAJOR">Major</div>
                 <div class="filter-option" data-value="CRITICAL">Critical</div>
             </div>
-        </button>
         
-        <button class="filter-btn" id="typeFilterBtn">
-            <span class="filter-label">Type</span>
-            <span class="filter-value default" id="typeFilterText"></span>
+            <div class="filter-chip">
+                <button class="filter-btn" id="typeFilterBtn">
+                    <span class="filter-label">Type</span>
+                    <span class="filter-value default" id="typeFilterText"></span>
+                </button>
+            </div>
             <div class="filter-dropdown" id="typeDropdown">
                 <div class="filter-option selected" data-value="all">All</div>
                 <div class="filter-option" data-value="Restaurant">Restaurant</div>
@@ -1066,31 +1086,34 @@
                 <div class="filter-option" data-value="Senior/Community Center">Senior Center</div>
                 <div class="filter-option" data-value="Catering">Catering</div>
             </div>
-        </button>
         
-        <button class="filter-btn" id="cityFilterBtn">
-            <span class="filter-label">City</span>
-            <span class="filter-value default" id="cityFilterText"></span>
+            <div class="filter-chip">
+                <button class="filter-btn" id="cityFilterBtn">
+                    <span class="filter-label">City</span>
+                    <span class="filter-value default" id="cityFilterText"></span>
+                </button>
+            </div>
             <div class="filter-dropdown" id="cityDropdown">
                 <div class="filter-option selected" data-value="all">All</div>
                 <!-- Cities populated dynamically -->
             </div>
-        </button>
         
-        <button class="filter-btn default-state" id="sortBtn">
-            <i class="fa-solid fa-filter"></i>
-            <span class="filter-value" id="sortText">Name</span> <span id="sortDirection">↓</span>
+            <div class="filter-chip">
+                <button class="filter-btn default-state" id="sortBtn">
+                    <i class="fa-solid fa-filter"></i>
+                    <span class="filter-value" id="sortText">Name</span> <span id="sortDirection">↓</span>
+                </button>
+            </div>
             <div class="filter-dropdown" id="sortDropdown">
                 <div class="filter-option selected sort-asc" data-value="name">Name</div>
                 <div class="filter-option" data-value="date">Inspection Date</div>
                 <div class="filter-option" data-value="risk">Risk Score</div>
                 <div class="filter-option" data-value="violations">Violation Count</div>
             </div>
-        </button>
         
-        <!-- Clear All Filters Button -->
-        <button class="clear-all-btn" id="clearAllBtn" title="Clear all filters and sorts">✕</button>
-    </div>
+            <!-- Clear All Filters Button -->
+            <button class="clear-all-btn" id="clearAllBtn" title="Clear all filters and sorts">✕</button>
+        </div>
     </div>
 </div>
 
