@@ -967,33 +967,25 @@
                 width: 100%;
             }
             
-            /* Horizontal scroll container */
+            /* Horizontal scroll container - Simple approach */
             .filter-scroll {
                 overflow-x: auto;
-                overflow-y: hidden;  /* CRITICAL: Must be hidden, not visible */
+                overflow-y: visible;  /* Try visible first */
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
                 -ms-overflow-style: none;
-                padding-bottom: 420px;  /* Space for dropdowns below */
-                margin-bottom: -420px;  /* Collapse the space */
             }
             
             .filter-scroll::-webkit-scrollbar {
                 display: none;
             }
             
-            /* Filter buttons container */
+            /* Filter buttons - inline-flex creates natural overflow */
             .filter-buttons {
+                display: inline-flex;
                 flex-wrap: nowrap;
+                gap: 8px;
                 min-width: max-content;
-            }
-            
-            /* Real spacer element for dropdown overflow */
-            .scroll-spacer {
-                width: 300px;
-                height: 1px;
-                flex-shrink: 0;
-                pointer-events: none;  /* Don't interfere with interactions */
             }
             
             /* Filter chip is positioning anchor */
@@ -1002,44 +994,22 @@
                 flex-shrink: 0;
             }
             
-            /* Clear button needs no extra margin */
+            /* Clear button always at the end */
             .clear-all-btn {
                 flex-shrink: 0;
-                margin-right: 0;
             }
             
-            /* Dropdowns positioned relative to chip - LEFT ALIGNED */
-            .filter-dropdown {
-                position: absolute;
-                top: calc(100% + 12px);
-                left: 0;  /* Align to left edge of button */
-                transform: none;  /* No centering */
+            /* Dropdowns positioned FIXED to viewport - don't scroll with buttons */
+            .filter-dropdown.visible {
+                position: fixed !important;  /* Fixed to viewport, not scrolling container */
                 z-index: 10000;
-                max-width: calc(100vw - 20px);
-                /* Prevent dropdown from going off right edge */
-                right: auto;
+                max-width: 280px;
             }
             
-            /* Use right positioning if dropdown would go off screen */
-            .filter-chip:last-child .filter-dropdown {
-                left: auto;
-                right: 0;  /* Align to right edge if last button */
-            }
-            
-            /* Arrow points to left side of button by default */
+            /* Arrow positioning */
             .filter-dropdown::before {
-                left: 20px;  /* Position near left edge */
+                left: 20px;
                 transform: translateX(0);
-            }
-            
-            /* Arrow for last dropdown (right-aligned) */
-            .filter-chip:last-child .filter-dropdown::before {
-                left: auto;
-                right: 20px;
-            }
-            
-            .clear-all-btn {
-                flex-shrink: 0;
             }
             
             .results-sidebar {
@@ -1154,9 +1124,6 @@
         
             <!-- Clear All Filters Button -->
             <button class="clear-all-btn" id="clearAllBtn" title="Clear all filters and sorts">✕</button>
-            
-            <!-- Invisible spacer for dropdown overflow -->
-            <div class="scroll-spacer"></div>
         </div>
     </div>
 </div>
@@ -2103,6 +2070,13 @@ function setupFilterDropdowns() {
         e.stopPropagation();
         riskDropdown.classList.toggle('visible');
         closeOtherDropdowns('riskDropdown');
+        
+        // Position dropdown fixed to viewport
+        if (riskDropdown.classList.contains('visible')) {
+            const btnRect = riskBtn.getBoundingClientRect();
+            riskDropdown.style.top = `${btnRect.bottom + 8}px`;
+            riskDropdown.style.left = `${btnRect.left}px`;
+        }
     });
     
     riskDropdown.querySelectorAll('.filter-option').forEach(option => {
@@ -2164,6 +2138,13 @@ function setupFilterDropdowns() {
         e.stopPropagation();
         typeDropdown.classList.toggle('visible');
         closeOtherDropdowns('typeDropdown');
+        
+        // Position dropdown fixed to viewport
+        if (typeDropdown.classList.contains('visible')) {
+            const btnRect = typeBtn.getBoundingClientRect();
+            typeDropdown.style.top = `${btnRect.bottom + 8}px`;
+            typeDropdown.style.left = `${btnRect.left}px`;
+        }
     });
     
     typeDropdown.querySelectorAll('.filter-option').forEach(option => {
@@ -2205,6 +2186,13 @@ function setupFilterDropdowns() {
         e.stopPropagation();
         cityDropdown.classList.toggle('visible');
         closeOtherDropdowns('cityDropdown');
+        
+        // Position dropdown fixed to viewport
+        if (cityDropdown.classList.contains('visible')) {
+            const btnRect = cityBtn.getBoundingClientRect();
+            cityDropdown.style.top = `${btnRect.bottom + 8}px`;
+            cityDropdown.style.left = `${btnRect.left}px`;
+        }
     });
     
     cityDropdown.querySelectorAll('.filter-option').forEach(option => {
@@ -2246,6 +2234,13 @@ function setupFilterDropdowns() {
         e.stopPropagation();
         sortDropdown.classList.toggle('visible');
         closeOtherDropdowns('sortDropdown');
+        
+        // Position dropdown fixed to viewport
+        if (sortDropdown.classList.contains('visible')) {
+            const btnRect = sortBtn.getBoundingClientRect();
+            sortDropdown.style.top = `${btnRect.bottom + 8}px`;
+            sortDropdown.style.left = `${btnRect.left}px`;
+        }
     });
     
     sortDropdown.querySelectorAll('.filter-option').forEach(option => {
