@@ -988,10 +988,25 @@
                 min-width: max-content;
             }
             
+            /* Add invisible spacer after buttons to create permanent scroll space */
+            .filter-buttons::after {
+                content: '';
+                display: block;
+                width: 300px;  /* Space for widest dropdown to extend */
+                height: 1px;
+                flex-shrink: 0;
+            }
+            
             /* Filter chip is positioning anchor */
             .filter-chip {
                 position: relative;
                 flex-shrink: 0;
+            }
+            
+            /* Clear button needs no extra margin */
+            .clear-all-btn {
+                flex-shrink: 0;
+                margin-right: 0;
             }
             
             /* Dropdowns positioned relative to chip - LEFT ALIGNED */
