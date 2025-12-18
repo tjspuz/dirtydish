@@ -973,12 +973,14 @@
             /* Horizontal scroll container */
             .filter-scroll {
                 overflow-x: auto;
-                overflow-y: visible;  /* Allow dropdowns to escape vertically */
+                overflow-y: hidden;  /* CHANGED: Must be hidden, not visible */
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
                 -ms-overflow-style: none;
                 padding-bottom: 420px;  /* Space for dropdowns below */
                 margin-bottom: -420px;  /* Collapse the space */
+                /* Ensure scroll container doesn't block pointer events */
+                position: relative;
             }
             
             .filter-scroll::-webkit-scrollbar {
@@ -1004,10 +1006,16 @@
                 left: 0;  /* Align to left edge of button */
                 transform: none;  /* No centering */
                 z-index: 10000;
-                width: max-content;  /* Fit content */
-                max-width: calc(100vw - 30px);  /* Prevent off-screen */
+                width: auto;  /* Auto width */
+                max-width: 250px;  /* Cap width to prevent excessive width */
                 min-width: 200px;
                 right: auto;
+            }
+            
+            /* Ensure long text wraps in dropdowns on mobile */
+            .filter-dropdown .filter-option {
+                white-space: normal;  /* Allow wrapping on mobile */
+                word-wrap: break-word;
             }
             
             /* Use right positioning if dropdown would go off screen */
