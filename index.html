@@ -999,30 +999,37 @@
                 max-width: calc(100vw - 20px);  /* Never wider than screen */
             }
             
-            /* Special positioning for first and last dropdowns to prevent off-screen */
-            .filter-chip:first-child .filter-dropdown,
-            #riskDropdown {
-                left: 0;  /* Align left edge with button */
-                transform: translateX(0);  /* No centering */
-            }
-            
-            .filter-chip:last-of-type .filter-dropdown,
+            /* Special positioning for Risk and Sort dropdowns - use fixed to escape ALL containers */
+            #riskDropdown,
             #sortDropdown {
-                left: auto;  /* Remove left positioning */
-                right: 0;    /* Align right edge with button */
-                transform: translateX(0);  /* No centering */
+                position: fixed !important;  /* Escape all positioning contexts */
+                z-index: 99999 !important;   /* Extremely high z-index */
             }
             
-            /* Adjust arrow position for left-aligned dropdown */
+            /* Risk dropdown - align to left */
+            #riskDropdown.visible {
+                left: 10px !important;  /* Fixed to left edge of screen */
+                top: 110px !important;  /* Below the filter buttons */
+                transform: none !important;
+            }
+            
+            /* Sort dropdown - align to right */
+            #sortDropdown.visible {
+                right: 10px !important;  /* Fixed to right edge of screen */
+                left: auto !important;
+                top: 110px !important;   /* Below the filter buttons */
+                transform: none !important;
+            }
+            
+            /* Adjust arrow positions */
             #riskDropdown::before {
-                left: 20px;  /* Position arrow near left edge */
+                left: 20px;
                 transform: translateX(0);
             }
             
-            /* Adjust arrow position for right-aligned dropdown */
             #sortDropdown::before {
                 left: auto;
-                right: 20px;  /* Position arrow near right edge */
+                right: 20px;
                 transform: translateX(0);
             }
             
