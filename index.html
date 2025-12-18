@@ -995,6 +995,35 @@
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 10000;
+                /* Safeguards to keep dropdown on screen */
+                max-width: calc(100vw - 20px);  /* Never wider than screen */
+            }
+            
+            /* Special positioning for first and last dropdowns to prevent off-screen */
+            .filter-chip:first-child .filter-dropdown,
+            #riskDropdown {
+                left: 0;  /* Align left edge with button */
+                transform: translateX(0);  /* No centering */
+            }
+            
+            .filter-chip:last-of-type .filter-dropdown,
+            #sortDropdown {
+                left: auto;  /* Remove left positioning */
+                right: 0;    /* Align right edge with button */
+                transform: translateX(0);  /* No centering */
+            }
+            
+            /* Adjust arrow position for left-aligned dropdown */
+            #riskDropdown::before {
+                left: 20px;  /* Position arrow near left edge */
+                transform: translateX(0);
+            }
+            
+            /* Adjust arrow position for right-aligned dropdown */
+            #sortDropdown::before {
+                left: auto;
+                right: 20px;  /* Position arrow near right edge */
+                transform: translateX(0);
             }
             
             .clear-all-btn {
