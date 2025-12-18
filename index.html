@@ -954,31 +954,7 @@
             }
             
             .filter-buttons {
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: none;
-                -ms-overflow-style: none;
-                padding-bottom: 2px;
-                /* Allow space for dropdowns below */
-                min-height: 46px;
-                padding-bottom: 420px;  /* Space for dropdown below */
-                margin-bottom: -420px;   /* Collapse the extra space */
-            }
-            
-            .filter-buttons::-webkit-scrollbar {
-                display: none;
-            }
-            
-            .filter-btn,
-            .clear-all-btn {
-                flex-shrink: 0;
-            }
-            
-            /* Dropdowns positioned absolutely within the tall container */
-            .filter-dropdown {
-                z-index: 10000;
-                position: absolute;
+                flex-wrap: wrap;
             }
             
             .results-sidebar {
