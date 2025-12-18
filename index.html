@@ -244,25 +244,28 @@
         .filter-dropdown {
             position: absolute;
             top: calc(100% + 12px);
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;  /* Align to left edge of button */
+            transform: none;  /* No centering */
             background: white;
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.25);
             min-width: 200px;
-            max-height: 400px;
+            width: max-content;  /* Fit content width */
+            max-width: calc(100vw - 30px);  /* Never exceed screen width (with margin) */
+            max-height: 252px;  /* Exactly 6 rows: (10px + 10px padding + ~22px text) * 6 */
             overflow-y: auto;
+            overflow-x: hidden;  /* Prevent horizontal overflow */
             display: none;
             z-index: 1002;
         }
         
-        /* Popover arrow */
+        /* Popover arrow - positioned near left edge */
         .filter-dropdown::before {
             content: '';
             position: absolute;
             top: -8px;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 20px;  /* Near left edge, pointing to button */
+            transform: translateX(0);
             width: 0;
             height: 0;
             border-left: 8px solid transparent;
@@ -282,6 +285,9 @@
             border-bottom: 1px solid #f0f0f0;
             transition: background 0.2s;
             font-size: 0.9rem;
+            white-space: nowrap;  /* Prevent text wrapping */
+            overflow: hidden;     /* Hide overflow text */
+            text-overflow: ellipsis;  /* Show ... for long text */
         }
         
         .filter-option:last-child {
@@ -967,9 +973,12 @@
             /* Horizontal scroll container */
             .filter-scroll {
                 overflow-x: auto;
+                overflow-y: visible;  /* Allow dropdowns to escape vertically */
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
                 -ms-overflow-style: none;
+                padding-bottom: 420px;  /* Space for dropdowns below */
+                margin-bottom: -420px;  /* Collapse the space */
             }
             
             .filter-scroll::-webkit-scrollbar {
@@ -988,49 +997,35 @@
                 flex-shrink: 0;
             }
             
-            /* Dropdowns positioned relative to chip, escape scroll container */
+            /* Dropdowns positioned relative to chip - LEFT ALIGNED */
             .filter-dropdown {
                 position: absolute;
                 top: calc(100% + 12px);
-                left: 50%;
-                transform: translateX(-50%);
+                left: 0;  /* Align to left edge of button */
+                transform: none;  /* No centering */
                 z-index: 10000;
-                /* Safeguards to keep dropdown on screen */
-                max-width: calc(100vw - 20px);  /* Never wider than screen */
+                width: max-content;  /* Fit content */
+                max-width: calc(100vw - 30px);  /* Prevent off-screen */
+                min-width: 200px;
+                right: auto;
             }
             
-            /* Special positioning for Risk and Sort dropdowns - use fixed to escape ALL containers */
-            #riskDropdown,
-            #sortDropdown {
-                position: fixed !important;  /* Escape all positioning contexts */
-                z-index: 99999 !important;   /* Extremely high z-index */
+            /* Use right positioning if dropdown would go off screen */
+            .filter-chip:last-child .filter-dropdown {
+                left: auto;
+                right: 0;  /* Align to right edge if last button */
             }
             
-            /* Risk dropdown - align to left */
-            #riskDropdown.visible {
-                left: 10px !important;  /* Fixed to left edge of screen */
-                top: 110px !important;  /* Below the filter buttons */
-                transform: none !important;
-            }
-            
-            /* Sort dropdown - align to right */
-            #sortDropdown.visible {
-                right: 10px !important;  /* Fixed to right edge of screen */
-                left: auto !important;
-                top: 110px !important;   /* Below the filter buttons */
-                transform: none !important;
-            }
-            
-            /* Adjust arrow positions */
-            #riskDropdown::before {
-                left: 20px;
+            /* Arrow points to left side of button by default */
+            .filter-dropdown::before {
+                left: 20px;  /* Position near left edge */
                 transform: translateX(0);
             }
             
-            #sortDropdown::before {
+            /* Arrow for last dropdown (right-aligned) */
+            .filter-chip:last-child .filter-dropdown::before {
                 left: auto;
                 right: 20px;
-                transform: translateX(0);
             }
             
             .clear-all-btn {
@@ -1092,14 +1087,14 @@
                     <span class="filter-label">Risk</span>
                     <span class="filter-value default" id="riskFilterText"></span>
                 </button>
-            </div>
-            <div class="filter-dropdown" id="riskDropdown">
-                <div class="filter-option selected" data-value="all">All</div>
-                <div class="filter-option" data-value="NONE">None</div>
-                <div class="filter-option" data-value="MINOR">Minor</div>
-                <div class="filter-option" data-value="MODERATE">Moderate</div>
-                <div class="filter-option" data-value="MAJOR">Major</div>
-                <div class="filter-option" data-value="CRITICAL">Critical</div>
+                <div class="filter-dropdown" id="riskDropdown">
+                    <div class="filter-option selected" data-value="all">All</div>
+                    <div class="filter-option" data-value="NONE">None</div>
+                    <div class="filter-option" data-value="MINOR">Minor</div>
+                    <div class="filter-option" data-value="MODERATE">Moderate</div>
+                    <div class="filter-option" data-value="MAJOR">Major</div>
+                    <div class="filter-option" data-value="CRITICAL">Critical</div>
+                </div>
             </div>
         
             <div class="filter-chip">
@@ -1107,20 +1102,20 @@
                     <span class="filter-label">Type</span>
                     <span class="filter-value default" id="typeFilterText"></span>
                 </button>
-            </div>
-            <div class="filter-dropdown" id="typeDropdown">
-                <div class="filter-option selected" data-value="all">All</div>
-                <div class="filter-option" data-value="Restaurant">Restaurant</div>
-                <div class="filter-option" data-value="Fast Food">Fast Food</div>
-                <div class="filter-option" data-value="Grocery Store">Grocery</div>
-                <div class="filter-option" data-value="School">School</div>
-                <div class="filter-option" data-value="Bar/Brewery/Distillery">Bar/Brewery</div>
-                <div class="filter-option" data-value="Coffee Shop/Cafe">Coffee/Cafe</div>
-                <div class="filter-option" data-value="Gas Station/Convenience">Gas Station</div>
-                <div class="filter-option" data-value="Bakery/Dessert">Bakery</div>
-                <div class="filter-option" data-value="Hotel/Lodging">Hotel</div>
-                <div class="filter-option" data-value="Senior/Community Center">Senior Center</div>
-                <div class="filter-option" data-value="Catering">Catering</div>
+                <div class="filter-dropdown" id="typeDropdown">
+                    <div class="filter-option selected" data-value="all">All</div>
+                    <div class="filter-option" data-value="Restaurant">Restaurant</div>
+                    <div class="filter-option" data-value="Fast Food">Fast Food</div>
+                    <div class="filter-option" data-value="Grocery Store">Grocery</div>
+                    <div class="filter-option" data-value="School">School</div>
+                    <div class="filter-option" data-value="Bar/Brewery/Distillery">Bar/Brewery</div>
+                    <div class="filter-option" data-value="Coffee Shop/Cafe">Coffee/Cafe</div>
+                    <div class="filter-option" data-value="Gas Station/Convenience">Gas Station</div>
+                    <div class="filter-option" data-value="Bakery/Dessert">Bakery</div>
+                    <div class="filter-option" data-value="Hotel/Lodging">Hotel</div>
+                    <div class="filter-option" data-value="Senior/Community Center">Senior Center</div>
+                    <div class="filter-option" data-value="Catering">Catering</div>
+                </div>
             </div>
         
             <div class="filter-chip">
@@ -1128,10 +1123,10 @@
                     <span class="filter-label">City</span>
                     <span class="filter-value default" id="cityFilterText"></span>
                 </button>
-            </div>
-            <div class="filter-dropdown" id="cityDropdown">
-                <div class="filter-option selected" data-value="all">All</div>
-                <!-- Cities populated dynamically -->
+                <div class="filter-dropdown" id="cityDropdown">
+                    <div class="filter-option selected" data-value="all">All</div>
+                    <!-- Cities populated dynamically -->
+                </div>
             </div>
         
             <div class="filter-chip">
@@ -1139,12 +1134,12 @@
                     <i class="fa-solid fa-filter"></i>
                     <span class="filter-value" id="sortText">Name</span> <span id="sortDirection">↓</span>
                 </button>
-            </div>
-            <div class="filter-dropdown" id="sortDropdown">
-                <div class="filter-option selected sort-asc" data-value="name">Name</div>
-                <div class="filter-option" data-value="date">Inspection Date</div>
-                <div class="filter-option" data-value="risk">Risk Score</div>
-                <div class="filter-option" data-value="violations">Violation Count</div>
+                <div class="filter-dropdown" id="sortDropdown">
+                    <div class="filter-option selected sort-asc" data-value="name">Name</div>
+                    <div class="filter-option" data-value="date">Inspection Date</div>
+                    <div class="filter-option" data-value="risk">Risk Score</div>
+                    <div class="filter-option" data-value="violations">Violation Count</div>
+                </div>
             </div>
         
             <!-- Clear All Filters Button -->
