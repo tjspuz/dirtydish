@@ -977,6 +977,8 @@
                 -ms-overflow-style: none;
                 width: 100%;  /* Full width of parent */
                 position: relative;  /* Create stacking context */
+                padding: 6px 0;  /* Space for button shadows top/bottom */
+                margin: -6px 0;  /* Collapse the space */
             }
             
             .filter-scroll::-webkit-scrollbar {
@@ -2135,6 +2137,11 @@ function setupFilterDropdowns() {
             }
             
             riskDropdown.classList.remove('visible');
+            // Clear fixed positioning on mobile
+            if (window.innerWidth <= 768) {
+                riskDropdown.style.top = '';
+                riskDropdown.style.left = '';
+            }
             applyFilters();
         });
     });
@@ -2183,6 +2190,11 @@ function setupFilterDropdowns() {
             }
             
             typeDropdown.classList.remove('visible');
+            // Clear fixed positioning on mobile
+            if (window.innerWidth <= 768) {
+                typeDropdown.style.top = '';
+                typeDropdown.style.left = '';
+            }
             applyFilters();
         });
     });
@@ -2231,6 +2243,11 @@ function setupFilterDropdowns() {
             }
             
             cityDropdown.classList.remove('visible');
+            // Clear fixed positioning on mobile
+            if (window.innerWidth <= 768) {
+                cityDropdown.style.top = '';
+                cityDropdown.style.left = '';
+            }
             applyFilters();
         });
     });
@@ -2290,13 +2307,25 @@ function setupFilterDropdowns() {
             document.getElementById('sortText').textContent = option.textContent.replace(/[↓↑]/g, '').trim();
             document.getElementById('sortDirection').textContent = sortAscending ? '↓' : '↑';
             sortDropdown.classList.remove('visible');
+            // Clear fixed positioning on mobile
+            if (window.innerWidth <= 768) {
+                sortDropdown.style.top = '';
+                sortDropdown.style.left = '';
+            }
             applyFilters();
         });
     });
     
     // Close dropdowns when clicking outside
     document.addEventListener('click', () => {
-        document.querySelectorAll('.filter-dropdown').forEach(d => d.classList.remove('visible'));
+        document.querySelectorAll('.filter-dropdown').forEach(d => {
+            d.classList.remove('visible');
+            // Clear fixed positioning on mobile
+            if (window.innerWidth <= 768) {
+                d.style.top = '';
+                d.style.left = '';
+            }
+        });
     });
 }
 
@@ -2305,7 +2334,13 @@ function closeOtherDropdowns(exceptId) {
     const dropdowns = ['riskDropdown', 'typeDropdown', 'cityDropdown', 'sortDropdown'];
     dropdowns.forEach(id => {
         if (id !== exceptId) {
-            document.getElementById(id).classList.remove('visible');
+            const dropdown = document.getElementById(id);
+            dropdown.classList.remove('visible');
+            // Clear fixed positioning styles on mobile
+            if (window.innerWidth <= 768) {
+                dropdown.style.top = '';
+                dropdown.style.left = '';
+            }
         }
     });
 }
