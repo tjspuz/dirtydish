@@ -1049,7 +1049,7 @@
                 display: none;
             }
             
-            /* Backdrop overlay */
+            /* Backdrop overlay - MUST be behind dropdown */
             body.dropdown-open::before {
                 content: '';
                 position: fixed;
@@ -1058,8 +1058,9 @@
                 right: 0;
                 bottom: 0;
                 background: rgba(0,0,0,0.4);
-                z-index: 10000;
+                z-index: 9999;  /* LOWER than dropdown (10001) */
                 animation: fadeIn 0.3s;
+                pointer-events: auto;  /* Allow clicks to pass through to close */
             }
             
             @keyframes fadeIn {
@@ -2361,6 +2362,13 @@ function setupFilterDropdowns() {
         if (window.innerWidth <= 768) {
             document.body.classList.remove('dropdown-open');
         }
+    });
+    
+    // Prevent dropdown clicks from closing dropdown
+    document.querySelectorAll('.filter-dropdown').forEach(dropdown => {
+        dropdown.addEventListener('click', (e) => {
+            e.stopPropagation();  // Keep dropdown open when clicking inside it
+        });
     });
 }
 
