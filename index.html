@@ -1152,14 +1152,7 @@
                     <span class="filter-label">Risk</span>
                     <span class="filter-value default" id="riskFilterText"></span>
                 </button>
-                <div class="filter-dropdown" id="riskDropdown">
-                    <div class="filter-option selected" data-value="all">All</div>
-                    <div class="filter-option" data-value="NONE">None</div>
-                    <div class="filter-option" data-value="MINOR">Minor</div>
-                    <div class="filter-option" data-value="MODERATE">Moderate</div>
-                    <div class="filter-option" data-value="MAJOR">Major</div>
-                    <div class="filter-option" data-value="CRITICAL">Critical</div>
-                </div>
+                <!-- Dropdown moved to end of .floating-search to escape scroll clip -->
             </div>
         
             <div class="filter-chip">
@@ -1167,20 +1160,7 @@
                     <span class="filter-label">Type</span>
                     <span class="filter-value default" id="typeFilterText"></span>
                 </button>
-                <div class="filter-dropdown" id="typeDropdown">
-                    <div class="filter-option selected" data-value="all">All</div>
-                    <div class="filter-option" data-value="Restaurant">Restaurant</div>
-                    <div class="filter-option" data-value="Fast Food">Fast Food</div>
-                    <div class="filter-option" data-value="Grocery Store">Grocery</div>
-                    <div class="filter-option" data-value="School">School</div>
-                    <div class="filter-option" data-value="Bar/Brewery/Distillery">Bar/Brewery</div>
-                    <div class="filter-option" data-value="Coffee Shop/Cafe">Coffee/Cafe</div>
-                    <div class="filter-option" data-value="Gas Station/Convenience">Gas Station</div>
-                    <div class="filter-option" data-value="Bakery/Dessert">Bakery</div>
-                    <div class="filter-option" data-value="Hotel/Lodging">Hotel</div>
-                    <div class="filter-option" data-value="Senior/Community Center">Senior Center</div>
-                    <div class="filter-option" data-value="Catering">Catering</div>
-                </div>
+                <!-- Dropdown moved outside -->
             </div>
         
             <div class="filter-chip">
@@ -1188,10 +1168,7 @@
                     <span class="filter-label">City</span>
                     <span class="filter-value default" id="cityFilterText"></span>
                 </button>
-                <div class="filter-dropdown" id="cityDropdown">
-                    <div class="filter-option selected" data-value="all">All</div>
-                    <!-- Cities populated dynamically -->
-                </div>
+                <!-- Dropdown moved outside -->
             </div>
         
             <div class="filter-chip">
@@ -1199,17 +1176,49 @@
                     <i class="fa-solid fa-filter"></i>
                     <span class="filter-value" id="sortText">Name</span> <span id="sortDirection">↓</span>
                 </button>
-                <div class="filter-dropdown" id="sortDropdown">
-                    <div class="filter-option selected sort-asc" data-value="name">Name</div>
-                    <div class="filter-option" data-value="date">Inspection Date</div>
-                    <div class="filter-option" data-value="risk">Risk Score</div>
-                    <div class="filter-option" data-value="violations">Violation Count</div>
-                </div>
+                <!-- Dropdown moved outside -->
             </div>
         
             <!-- Clear All Filters Button -->
             <button class="clear-all-btn" id="clearAllBtn" title="Clear all filters and sorts">✕</button>
         </div>
+    </div>
+    
+    <!-- DROPDOWNS OUTSIDE SCROLL CONTAINER - Prevents iOS clipping -->
+    <div class="filter-dropdown" id="riskDropdown">
+        <div class="filter-option selected" data-value="all">All</div>
+        <div class="filter-option" data-value="NONE">None</div>
+        <div class="filter-option" data-value="MINOR">Minor</div>
+        <div class="filter-option" data-value="MODERATE">Moderate</div>
+        <div class="filter-option" data-value="MAJOR">Major</div>
+        <div class="filter-option" data-value="CRITICAL">Critical</div>
+    </div>
+    
+    <div class="filter-dropdown" id="typeDropdown">
+        <div class="filter-option selected" data-value="all">All</div>
+        <div class="filter-option" data-value="Restaurant">Restaurant</div>
+        <div class="filter-option" data-value="Fast Food">Fast Food</div>
+        <div class="filter-option" data-value="Grocery Store">Grocery</div>
+        <div class="filter-option" data-value="School">School</div>
+        <div class="filter-option" data-value="Bar/Brewery/Distillery">Bar/Brewery</div>
+        <div class="filter-option" data-value="Coffee Shop/Cafe">Coffee/Cafe</div>
+        <div class="filter-option" data-value="Gas Station/Convenience">Gas Station</div>
+        <div class="filter-option" data-value="Bakery/Dessert">Bakery</div>
+        <div class="filter-option" data-value="Hotel/Lodging">Hotel</div>
+        <div class="filter-option" data-value="Senior/Community Center">Senior Center</div>
+        <div class="filter-option" data-value="Catering">Catering</div>
+    </div>
+    
+    <div class="filter-dropdown" id="cityDropdown">
+        <div class="filter-option selected" data-value="all">All</div>
+        <!-- Cities populated dynamically -->
+    </div>
+    
+    <div class="filter-dropdown" id="sortDropdown">
+        <div class="filter-option selected sort-asc" data-value="name">Name</div>
+        <div class="filter-option" data-value="date">Inspection Date</div>
+        <div class="filter-option" data-value="risk">Risk Score</div>
+        <div class="filter-option" data-value="violations">Violation Count</div>
     </div>
 </div>
 
