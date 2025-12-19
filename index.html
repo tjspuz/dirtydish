@@ -961,7 +961,8 @@
                 top: 10px;
                 left: 10px;
                 right: 10px;
-                width: auto;  /* Let it size naturally */
+                width: auto;
+                align-items: stretch;  /* Changed from flex-start to prevent clipping */
             }
             
             .search-wrapper {
@@ -2397,7 +2398,8 @@ function populateCityFilter() {
         option.dataset.value = city;
         option.textContent = city;
         
-        option.addEventListener('click', () => {
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();  // CRITICAL: Prevent event bubbling
             cityDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
             option.classList.add('selected');
             currentCityFilter = city;
@@ -2416,6 +2418,13 @@ function populateCityFilter() {
             filterValue.textContent = text;
             
             cityDropdown.classList.remove('visible');
+            // Clear fixed positioning on mobile
+            if (window.innerWidth <= 768) {
+                cityDropdown.style.position = '';
+                cityDropdown.style.top = '';
+                cityDropdown.style.left = '';
+                cityDropdown.style.maxWidth = '';
+            }
             applyFilters();
         });
         
@@ -2563,10 +2572,38 @@ function updateClearAllButton() {
         currentSort !== 'name' ||
         !sortAscending;
     
+    const wasVisible = clearBtn.classList.contains('visible');
+    
     if (hasActiveFilters) {
         clearBtn.classList.add('visible');
     } else {
         clearBtn.classList.remove('visible');
+    }
+    
+    // Fix 3: Recalculate dropdown positions after layout shift
+    if (wasVisible !== hasActiveFilters && window.innerWidth <= 768) {
+        // Layout changed - wait for reflow then recalculate any visible dropdown
+        setTimeout(() => {
+            const dropdowns = [
+                { id: 'riskDropdown', btnId: 'riskFilterBtn' },
+                { id: 'typeDropdown', btnId: 'typeFilterBtn' },
+                { id: 'cityDropdown', btnId: 'cityFilterBtn' },
+                { id: 'sortDropdown', btnId: 'sortBtn' }
+            ];
+            
+            dropdowns.forEach(({ id, btnId }) => {
+                const dropdown = document.getElementById(id);
+                const btn = document.getElementById(btnId);
+                
+                if (dropdown.classList.contains('visible')) {
+                    const btnRect = btn.getBoundingClientRect();
+                    dropdown.style.position = 'fixed';
+                    dropdown.style.top = `${btnRect.bottom + 8}px`;
+                    dropdown.style.left = `${Math.max(10, btnRect.left)}px`;
+                    dropdown.style.maxWidth = `${window.innerWidth - 20}px`;
+                }
+            });
+        }, 50); // Small delay for layout to settle
     }
 }
 
