@@ -255,19 +255,21 @@
         .filter-dropdown {
             position: absolute;
             top: calc(100% + 12px);
-            left: 0;  /* Align to left edge of button */
-            transform: none;  /* No centering */
+            left: 0;
+            transform: none;
             background: white;
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.25);
             min-width: 200px;
-            max-width: 280px;  /* Prevent too wide */
+            max-width: 280px;
             max-height: 400px;
             overflow-y: auto;
-            overflow-x: hidden;  /* Prevent horizontal overflow */
-            display: none;
+            overflow-x: hidden;
+            visibility: hidden;  /* Use visibility instead of display */
+            opacity: 0;
+            transition: visibility 0s 0.2s, opacity 0.2s ease;
             z-index: 1002;
-            word-wrap: break-word;  /* Wrap long text */
+            word-wrap: break-word;
         }
         
         /* Popover arrow - positioned near left edge */
@@ -287,7 +289,9 @@
         }
         
         .filter-dropdown.visible {
-            display: block;
+            visibility: visible;
+            opacity: 1;
+            transition: visibility 0s 0s, opacity 0.2s ease;
         }
         
         .filter-option {
@@ -980,17 +984,17 @@
                 width: 100%;
             }
             
-            /* Horizontal scroll container - PROPER IMPLEMENTATION */
+            /* Horizontal scroll container - NO position:relative! */
             .filter-scroll {
                 overflow-x: auto;
-                overflow-y: visible;  /* Allow dropdowns to escape vertically */
+                overflow-y: visible;
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
                 -ms-overflow-style: none;
-                width: 100%;  /* Full width of parent */
-                position: relative;  /* Create stacking context */
-                padding: 12px 0;  /* Vertical space for shadows (12px blur radius) */
-                margin: -12px 0;  /* Collapse the space */
+                width: 100%;
+                /* CRITICAL: NO position:relative - it traps fixed children on iOS */
+                padding: 12px 0;
+                margin: -12px 0;
             }
             
             .filter-scroll::-webkit-scrollbar {
@@ -1021,24 +1025,32 @@
             /* MOBILE DROPDOWNS: Bottom Sheet Pattern (iOS Action Sheet style) */
             .filter-dropdown {
                 position: fixed !important;
-                bottom: 0;
+                bottom: -100vh;  /* Start off-screen below */
                 left: 0;
                 right: 0;
                 top: auto !important;
-                transform: translateY(100%);  /* Start off-screen below */
-                transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1);  /* iOS spring */
+                visibility: hidden;  /* Hidden by default */
+                opacity: 0;
+                transition: bottom 0.4s cubic-bezier(0.33, 1, 0.68, 1),
+                            opacity 0.4s ease,
+                            visibility 0s 0.4s;  /* Delay visibility until animation ends */
                 max-width: none;
                 width: 100%;
                 max-height: 70vh;
-                border-radius: 16px 16px 0 0;  /* Round top corners */
+                border-radius: 16px 16px 0 0;
                 box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
                 z-index: 10001;
-                padding-top: 8px;  /* Space for handle */
-                padding-bottom: env(safe-area-inset-bottom, 16px);  /* iPhone safe area */
+                padding-top: 8px;
+                padding-bottom: env(safe-area-inset-bottom, 16px);
             }
             
             .filter-dropdown.visible {
-                transform: translateY(0);  /* Slide up into view */
+                bottom: 0;  /* Slide up to screen bottom */
+                visibility: visible;
+                opacity: 1;
+                transition: bottom 0.4s cubic-bezier(0.33, 1, 0.68, 1),
+                            opacity 0.4s ease,
+                            visibility 0s 0s;  /* Show immediately when opening */
             }
             
             /* Handle/grip at top */
