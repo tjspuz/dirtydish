@@ -961,31 +961,35 @@
                 top: 10px;
                 left: 10px;
                 right: 10px;
+                width: auto;  /* Let it size naturally */
             }
             
             .search-wrapper {
                 width: 100%;
             }
             
-            /* Horizontal scroll container - Simple approach */
+            /* Horizontal scroll container - PROPER IMPLEMENTATION */
             .filter-scroll {
                 overflow-x: auto;
-                overflow-y: visible;  /* Try visible first */
+                overflow-y: visible;  /* Allow dropdowns to escape vertically */
                 -webkit-overflow-scrolling: touch;
                 scrollbar-width: none;
                 -ms-overflow-style: none;
+                width: 100%;  /* Full width of parent */
+                position: relative;  /* Create stacking context */
             }
             
             .filter-scroll::-webkit-scrollbar {
                 display: none;
             }
             
-            /* Filter buttons - inline-flex creates natural overflow */
+            /* Filter buttons - use inline-flex for proper width calculation */
             .filter-buttons {
-                display: inline-flex;
+                display: inline-flex;  /* CRITICAL: Creates proper scrollable width */
                 flex-wrap: nowrap;
                 gap: 8px;
-                min-width: max-content;
+                min-width: max-content;  /* Never shrink below content width */
+                align-items: center;
             }
             
             /* Filter chip is positioning anchor */
@@ -994,22 +998,27 @@
                 flex-shrink: 0;
             }
             
-            /* Clear button always at the end */
+            /* Clear button needs no extra margin */
             .clear-all-btn {
                 flex-shrink: 0;
             }
             
-            /* Dropdowns positioned FIXED to viewport - don't scroll with buttons */
+            /* Dropdowns use fixed positioning to escape scroll container */
             .filter-dropdown.visible {
-                position: fixed !important;  /* Fixed to viewport, not scrolling container */
+                position: fixed !important;  /* Escape scroll container */
                 z-index: 10000;
                 max-width: 280px;
+                /* Position calculated by JavaScript */
             }
             
-            /* Arrow positioning */
+            /* Arrow points to left side of button */
             .filter-dropdown::before {
                 left: 20px;
                 transform: translateX(0);
+            }
+            
+            .clear-all-btn {
+                flex-shrink: 0;
             }
             
             .results-sidebar {
@@ -2071,8 +2080,8 @@ function setupFilterDropdowns() {
         riskDropdown.classList.toggle('visible');
         closeOtherDropdowns('riskDropdown');
         
-        // Position dropdown fixed to viewport
-        if (riskDropdown.classList.contains('visible')) {
+        // On mobile, position dropdown fixed to viewport
+        if (window.innerWidth <= 768 && riskDropdown.classList.contains('visible')) {
             const btnRect = riskBtn.getBoundingClientRect();
             riskDropdown.style.top = `${btnRect.bottom + 8}px`;
             riskDropdown.style.left = `${btnRect.left}px`;
@@ -2139,8 +2148,8 @@ function setupFilterDropdowns() {
         typeDropdown.classList.toggle('visible');
         closeOtherDropdowns('typeDropdown');
         
-        // Position dropdown fixed to viewport
-        if (typeDropdown.classList.contains('visible')) {
+        // On mobile, position dropdown fixed to viewport
+        if (window.innerWidth <= 768 && typeDropdown.classList.contains('visible')) {
             const btnRect = typeBtn.getBoundingClientRect();
             typeDropdown.style.top = `${btnRect.bottom + 8}px`;
             typeDropdown.style.left = `${btnRect.left}px`;
@@ -2187,8 +2196,8 @@ function setupFilterDropdowns() {
         cityDropdown.classList.toggle('visible');
         closeOtherDropdowns('cityDropdown');
         
-        // Position dropdown fixed to viewport
-        if (cityDropdown.classList.contains('visible')) {
+        // On mobile, position dropdown fixed to viewport
+        if (window.innerWidth <= 768 && cityDropdown.classList.contains('visible')) {
             const btnRect = cityBtn.getBoundingClientRect();
             cityDropdown.style.top = `${btnRect.bottom + 8}px`;
             cityDropdown.style.left = `${btnRect.left}px`;
@@ -2235,8 +2244,8 @@ function setupFilterDropdowns() {
         sortDropdown.classList.toggle('visible');
         closeOtherDropdowns('sortDropdown');
         
-        // Position dropdown fixed to viewport
-        if (sortDropdown.classList.contains('visible')) {
+        // On mobile, position dropdown fixed to viewport
+        if (window.innerWidth <= 768 && sortDropdown.classList.contains('visible')) {
             const btnRect = sortBtn.getBoundingClientRect();
             sortDropdown.style.top = `${btnRect.bottom + 8}px`;
             sortDropdown.style.left = `${btnRect.left}px`;
