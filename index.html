@@ -977,21 +977,22 @@
                 -ms-overflow-style: none;
                 width: 100%;  /* Full width of parent */
                 position: relative;  /* Create stacking context */
-                padding: 6px 0;  /* Space for button shadows top/bottom */
-                margin: -6px 0;  /* Collapse the space */
+                padding: 12px 0;  /* Vertical space for shadows (12px blur radius) */
+                margin: -12px 0;  /* Collapse the space */
             }
             
             .filter-scroll::-webkit-scrollbar {
                 display: none;
             }
             
-            /* Filter buttons - use inline-flex for proper width calculation */
+            /* Filter buttons - horizontal buffer for edge shadows */
             .filter-buttons {
                 display: inline-flex;  /* CRITICAL: Creates proper scrollable width */
                 flex-wrap: nowrap;
                 gap: 8px;
                 min-width: max-content;  /* Never shrink below content width */
                 align-items: center;
+                padding: 0 12px;  /* Horizontal buffer for first/last button shadows */
             }
             
             /* Filter chip is positioning anchor */
@@ -2082,16 +2083,18 @@ function setupFilterDropdowns() {
         riskDropdown.classList.toggle('visible');
         closeOtherDropdowns('riskDropdown');
         
-        // On mobile, position dropdown fixed to viewport
+        // On mobile, position dropdown fixed to viewport (accounting for scroll)
         if (window.innerWidth <= 768 && riskDropdown.classList.contains('visible')) {
             const btnRect = riskBtn.getBoundingClientRect();
             riskDropdown.style.top = `${btnRect.bottom + 8}px`;
-            riskDropdown.style.left = `${btnRect.left}px`;
+            riskDropdown.style.left = `${Math.max(10, btnRect.left)}px`;  // Min 10px from edge
+            riskDropdown.style.maxWidth = `${window.innerWidth - 20}px`;  // Max width accounting for margins
         }
     });
     
     riskDropdown.querySelectorAll('.filter-option').forEach(option => {
-        option.addEventListener('click', () => {
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();  // CRITICAL: Prevent document click handler
             riskDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
             option.classList.add('selected');
             currentRiskFilter = option.dataset.value;
@@ -2155,16 +2158,18 @@ function setupFilterDropdowns() {
         typeDropdown.classList.toggle('visible');
         closeOtherDropdowns('typeDropdown');
         
-        // On mobile, position dropdown fixed to viewport
+        // On mobile, position dropdown fixed to viewport (accounting for scroll)
         if (window.innerWidth <= 768 && typeDropdown.classList.contains('visible')) {
             const btnRect = typeBtn.getBoundingClientRect();
             typeDropdown.style.top = `${btnRect.bottom + 8}px`;
-            typeDropdown.style.left = `${btnRect.left}px`;
+            typeDropdown.style.left = `${Math.max(10, btnRect.left)}px`;  // Min 10px from edge
+            typeDropdown.style.maxWidth = `${window.innerWidth - 20}px`;
         }
     });
     
     typeDropdown.querySelectorAll('.filter-option').forEach(option => {
-        option.addEventListener('click', () => {
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();  // CRITICAL: Prevent document click handler
             typeDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
             option.classList.add('selected');
             currentTypeFilter = option.dataset.value;
@@ -2208,16 +2213,18 @@ function setupFilterDropdowns() {
         cityDropdown.classList.toggle('visible');
         closeOtherDropdowns('cityDropdown');
         
-        // On mobile, position dropdown fixed to viewport
+        // On mobile, position dropdown fixed to viewport (accounting for scroll)
         if (window.innerWidth <= 768 && cityDropdown.classList.contains('visible')) {
             const btnRect = cityBtn.getBoundingClientRect();
             cityDropdown.style.top = `${btnRect.bottom + 8}px`;
-            cityDropdown.style.left = `${btnRect.left}px`;
+            cityDropdown.style.left = `${Math.max(10, btnRect.left)}px`;  // Min 10px from edge
+            cityDropdown.style.maxWidth = `${window.innerWidth - 20}px`;
         }
     });
     
     cityDropdown.querySelectorAll('.filter-option').forEach(option => {
-        option.addEventListener('click', () => {
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();  // CRITICAL: Prevent document click handler
             cityDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
             option.classList.add('selected');
             currentCityFilter = option.dataset.value;
@@ -2261,16 +2268,18 @@ function setupFilterDropdowns() {
         sortDropdown.classList.toggle('visible');
         closeOtherDropdowns('sortDropdown');
         
-        // On mobile, position dropdown fixed to viewport
+        // On mobile, position dropdown fixed to viewport (accounting for scroll)
         if (window.innerWidth <= 768 && sortDropdown.classList.contains('visible')) {
             const btnRect = sortBtn.getBoundingClientRect();
             sortDropdown.style.top = `${btnRect.bottom + 8}px`;
-            sortDropdown.style.left = `${btnRect.left}px`;
+            sortDropdown.style.left = `${Math.max(10, btnRect.left)}px`;  // Min 10px from edge
+            sortDropdown.style.maxWidth = `${window.innerWidth - 20}px`;
         }
     });
     
     sortDropdown.querySelectorAll('.filter-option').forEach(option => {
-        option.addEventListener('click', () => {
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();  // CRITICAL: Prevent document click handler
             const newSort = option.dataset.value;
             
             // Remove default state class when any sort is clicked
