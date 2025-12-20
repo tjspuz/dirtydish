@@ -163,7 +163,7 @@
         
         .filter-btn {
             background: white;
-            border: none;
+            border: 2px solid transparent;  /* Add border for hover transition */
             padding: 10px 16px;
             border-radius: 8px;
             font-size: 0.9rem;
@@ -209,6 +209,9 @@
         }
         
         .filter-btn:hover {
+            border-color: var(--primary);  /* Bold blue border */
+            border-width: 3px;  /* Thicker on hover */
+            background: #f8f9ff;  /* Light blue tint */
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
             transform: translateY(-1px);
         }
@@ -466,6 +469,7 @@
         /* Gauge sections */
         .gauge-section {
             margin-top: 16px;
+            padding: 6px 0;  /* Vertical padding to prevent clipping when segments expand */
             position: relative;  /* Added for tooltip positioning context */
         }
         
@@ -482,9 +486,10 @@
             height: 32px;
             background: rgba(255,255,255,0.1);
             border-radius: 6px;
-            overflow: visible;  /* Changed to visible for tooltips */
+            overflow: visible;  /* Allow borders and expansion to show */
             position: relative;
             isolation: isolate;  /* Create new stacking context */
+            margin: 6px 0;  /* Vertical margin to prevent clipping of expanded segments */
         }
         
         /* Inner container to preserve rounded edges */
@@ -1239,7 +1244,7 @@
                     <div class="stat-value" id="stat-avg">0</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">Avg. Violation Count</div>
+                    <div class="stat-label">Avg. Violations</div>
                     <div class="stat-value" id="stat-violations">0</div>
                 </div>
             </div>
@@ -1249,7 +1254,7 @@
         <div class="stats-gauges" id="statsGauges">
             <!-- Violation Type Gauge -->
             <div class="gauge-section">
-                <div class="gauge-label">Violation Types</div>
+                <div class="gauge-label">Violation Overview</div>
                 <div class="gauge-bar" id="violationGauge">
                     <div class="gauge-segment viol-high" data-type="HIGH" data-label="High" style="width: 0%">
                         <span class="gauge-count">0</span>
@@ -1292,7 +1297,7 @@
     <div class="legend-container collapsed">
         <div class="legend-header collapsed" onclick="toggleLegend()">
             <div class="legend-title-with-dots">
-                <span class="legend-title">Risk Level Guide</span>
+                <span class="legend-title">Risk Guide</span>
                 <div class="legend-dots-inline">
                     <span class="dot-inline" style="background: var(--color-none);"></span>
                     <span class="dot-inline" style="background: var(--color-minor);"></span>
@@ -1396,11 +1401,27 @@ function initMap() {
         maxClusterRadius: 50,
         spiderfyOnMaxZoom: true,
         showCoverageOnHover: true,
-        zoomToBoundsOnClick: true,
+        zoomToBoundsOnClick: false,  // Prevent re-clustering when clicking spiderfied markers
         iconCreateFunction: createClusterIcon
     });
     
     map.addLayer(markersCluster);
+    
+    // Handle cluster clicks manually to prevent re-clustering after spiderfy
+    markersCluster.on('clusterclick', function(a) {
+        const cluster = a.layer;
+        const childMarkers = cluster.getAllChildMarkers();
+        
+        // Only zoom if we haven't spiderfied yet (more than 1 marker in same location)
+        if (childMarkers.length > 1 && map.getZoom() < map.getMaxZoom()) {
+            cluster.zoomToBounds({ padding: [20, 20] });
+        }
+    });
+    
+    // Update stats when map view changes (zoom/pan)
+    map.on('moveend', function() {
+        updateStatsFromMapView();
+    });
 }
 
 // Create cluster icon with pie chart
@@ -1862,6 +1883,26 @@ function updateStats(data) {
     });
 }
 
+// Update stats based on markers visible in current map view
+function updateStatsFromMapView() {
+    if (!map || !markersCluster) return;
+    
+    const bounds = map.getBounds();
+    const visibleEstablishments = [];
+    
+    // Get all markers from cluster
+    markersCluster.eachLayer(function(marker) {
+        if (bounds.contains(marker.getLatLng()) && marker.options.establishment) {
+            visibleEstablishments.push(marker.options.establishment);
+        }
+    });
+    
+    // Update stats with visible establishments
+    if (visibleEstablishments.length > 0) {
+        updateStats(visibleEstablishments);
+    }
+}
+
 // Sort data
 function sortData(data) {
     const sorted = [...data];
@@ -2055,7 +2096,7 @@ function renderResults(data) {
         } else {
             violationsHTML = `
                 <div class="detail-section">
-                    <div class="no-violations">✓ No violations found</div>
+                    <div class="no-violations">✓ No violations found on ${r.inspectionDate || 'inspection date unknown'}</div>
                 </div>
             `;
         }
