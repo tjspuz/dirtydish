@@ -997,6 +997,17 @@
                 margin: -12px 0;
             }
             
+            /* CRITICAL FIX: Safari Hardware Layer Clipping Bug */
+            /* When dropdown is open, disable scroll container clipping entirely.
+               This prevents iOS from creating a hardware layer mask that clips
+               the fixed-position dropdown to the 50px button bar height. */
+            body.dropdown-open .filter-scroll {
+                overflow: visible !important;
+                /* Prevent transform from creating new stacking context */
+                transform: none !important;
+                -webkit-transform: none !important;
+            }
+            
             .filter-scroll::-webkit-scrollbar {
                 display: none;
             }
