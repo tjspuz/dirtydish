@@ -1152,7 +1152,7 @@
             type="text" 
             id="searchInput" 
             class="search-box" 
-            placeholder="Name, city, type, address, keywords
+            placeholder="Name, city, type, address, keywords"
             autocomplete="off"
         >
         <span class="search-count" id="searchCount">
@@ -2108,9 +2108,8 @@ function renderResults(data) {
                     <div class="result-address">${highlightedAddress}</div>
                     <div class="result-meta">
                         <span class="result-score">Score: ${r.riskScore || 0}</span>
-                        <span>${r.totalViolations || 0} violation${r.totalViolations !== 1 ? 's' : ''}</span>
+                        <span class="result-score">Violations: ${r.totalViolations || 0}</span>
                         <span>${r.inspectionDate || 'Date unknown'}</span>
-                        ${r.facilityType ? `<span>${r.facilityType}</span>` : ''}
                         ${r.matchedFields && r.matchedFields.includes('violation') ? 
                             '<span style="color:#e67e22;font-weight:700;">🔍 Found in violations</span>' : ''}
                     </div>
