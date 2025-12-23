@@ -223,21 +223,21 @@
         
         /* Clear All Filters Button - Matches other buttons */
         .clear-all-btn {
-            background: white;              /* White like other buttons */
+            background: white;
             border: none;
-            width: 42px;                    /* Fixed width */
-            height: 42px;                   /* Same height as buttons */
-            border-radius: 50%;             /* Circular */
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--text);             /* Dark text like other buttons */
+            width: 32px;                    /* Industry standard small button */
+            height: 32px;
+            border-radius: 50%;
+            font-size: 0.9rem;              /* Proportional to button size */
+            font-weight: 600;
+            color: var(--text);
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);  /* Same shadow */
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
             transition: all 0.2s;
-            display: none;                  /* Hidden by default */
+            display: none;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;                 /* Don't shrink */
+            flex-shrink: 0;
         }
         
         .clear-all-btn.visible {
@@ -1133,6 +1133,13 @@
         .leaflet-tooltip.persistent-tooltip::before {
             border-right-color: var(--primary);
         }
+
+        /* Mobile: Even smaller stat labels when collapsed to prevent wrapping */
+        @media (max-width: 768px) {
+            .stats-container.collapsed .stat-label {
+                font-size: 0.5rem !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1331,6 +1338,38 @@
             </div>
         </div>
     </div>
+    
+    <!-- About Section (matches Risk Guide style) -->
+    <div class="legend-container collapsed">
+        <div class="legend-header collapsed" onclick="toggleAbout()">
+            <div class="legend-title-with-dots">
+                <span class="legend-title">About</span>
+                <i class="fas fa-info-circle" style="font-size: 0.75rem; opacity: 0.7; margin-left: 6px;"></i>
+            </div>
+            <div class="legend-toggle collapsed" id="aboutToggle">▼</div>
+        </div>
+        <div class="legend-content collapsed" id="aboutContent">
+            <div class="legend-row" style="display: block; padding: 8px 0;">
+                <p style="margin-bottom: 12px; line-height: 1.6; font-size: 0.85rem;">
+                    This interactive map displays health inspection data for restaurants and food service 
+                    establishments. Violations are classified using the FDA Food Code system with a 4-tier 
+                    risk scoring model.
+                </p>
+                <p style="margin-bottom: 12px; line-height: 1.6; font-size: 0.85rem;">
+                    <strong>Data Source:</strong> Iowa Department of Inspections & Appeals
+                </p>
+                <p style="margin-bottom: 12px; line-height: 1.6; font-size: 0.85rem;">
+                    <strong>Last Updated:</strong> December 2025
+                </p>
+                <p style="margin: 0; line-height: 1.6; font-size: 0.85rem;">
+                    <a href="https://iowa.safefoodinspection.com" target="_blank" rel="noopener noreferrer" 
+                       style="color: var(--primary); text-decoration: underline;">
+                        View Official Database →
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1350,6 +1389,21 @@ function toggleLegend() {
     toggle.classList.toggle('collapsed');
 }
 
+
+
+// Toggle about visibility
+function toggleAbout() {
+    const containers = document.querySelectorAll('.legend-container');
+    const aboutContainer = containers[1];  // Second legend-container is About
+    const header = aboutContainer.querySelector('.legend-header');
+    const content = document.getElementById('aboutContent');
+    const toggle = document.getElementById('aboutToggle');
+    
+    aboutContainer.classList.toggle('collapsed');
+    header.classList.toggle('collapsed');
+    content.classList.toggle('collapsed');
+    toggle.classList.toggle('collapsed');
+}
 // Toggle stats visibility
 function toggleStats() {
     const container = document.getElementById('statsContainer');
@@ -1553,7 +1607,7 @@ function renderMarkers(data) {
         marker.on('click', () => {
             // Center on marker, but don't zoom out if already closer
             const currentZoom = map.getZoom();
-            const targetZoom = Math.max(currentZoom, 16); // Don't zoom out, only in or stay
+            const targetZoom = Math.max(currentZoom, 18); // Zoom to 18 to ensure individual marker (breaks clusters)
             map.setView([r.lat, r.lng], targetZoom, { animate: true });
             
             // Make tooltip persistent
@@ -1837,11 +1891,14 @@ function updateStats(data) {
             const percentage = (count / total) * 100;
             segment.style.width = `${percentage}%`;
             
-            // Update count display (changed from tooltip)
+            // Update count display
             const countDisplay = segment.querySelector('.gauge-count');
             if (countDisplay) {
                 countDisplay.textContent = count;
             }
+            
+            // Set tooltip
+            segment.title = `${level}: ${count}`;
             
             // Hide segment if count is 0
             segment.style.display = count === 0 ? 'none' : 'flex';
@@ -1864,6 +1921,7 @@ function updateStats(data) {
     const violTotal = violCounts.HIGH + violCounts.MEDIUM + violCounts.LOW || 1;
     
     // Update violation gauge segments
+    const fdaLabels = { 'HIGH': '(P)', 'MEDIUM': '(PF)', 'LOW': '(C)' };
     ['HIGH', 'MEDIUM', 'LOW'].forEach(tier => {
         const segment = document.querySelector(`.gauge-segment.viol-${tier.toLowerCase()}`);
         if (segment) {
@@ -1871,11 +1929,15 @@ function updateStats(data) {
             const percentage = (count / violTotal) * 100;
             segment.style.width = `${percentage}%`;
             
-            // Update count display (changed from tooltip)
+            // Update count display
             const countDisplay = segment.querySelector('.gauge-count');
             if (countDisplay) {
                 countDisplay.textContent = count;
             }
+            
+            // Set tooltip with FDA class
+            const fdaClass = fdaLabels[tier] || '';
+            segment.title = `${tier} ${fdaClass}: ${count}`;
             
             // Hide segment if count is 0
             segment.style.display = count === 0 ? 'none' : 'flex';
@@ -1985,6 +2047,13 @@ function highlightText(text, terms) {
     return highlighted;
 }
 
+
+// Convert text to title case (natural English capitalization)
+function toTitleCase(str) {
+    if (!str) return str;
+    return str.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+}
+
 function renderResults(data) {
     const list = document.getElementById('resultsList');
     list.innerHTML = '';
@@ -2012,12 +2081,12 @@ function renderResults(data) {
         
         // Highlight search terms in name and address
         const highlightedName = r.matchedTerms 
-            ? highlightText(r.name || 'Unknown', r.matchedTerms)
-            : (r.name || 'Unknown');
+            ? highlightText(toTitleCase(r.name || 'Unknown'), r.matchedTerms)
+            : toTitleCase(r.name || 'Unknown');
         
         const highlightedAddress = r.matchedTerms 
-            ? highlightText(r.addr || 'Address not available', r.matchedTerms)
-            : (r.addr || 'Address not available');
+            ? highlightText(toTitleCase(r.addr || 'Address not available'), r.matchedTerms)
+            : toTitleCase(r.addr || 'Address not available');
         
         // Build violations HTML
         let violationsHTML = '';
