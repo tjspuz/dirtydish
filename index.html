@@ -656,7 +656,7 @@
         }
         
         .result-name {
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: var(--text);
             margin-bottom: 6px;
@@ -1113,13 +1113,74 @@
                 flex-shrink: 0;
             }
             
+            /* MODERN BOTTOM SHEET STYLES */
             .results-sidebar {
-                left: 10px;
-                right: 10px;
-                width: auto;
-                top: 180px;
-                max-height: calc(100vh - 200px);
+                /* Reset Desktop Styles */
+                top: auto !important; 
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                max-height: none !important; /* Remove desktop constraints */
+                
+                /* Mobile Positioning */
+                position: fixed;
+                bottom: 0;
+                height: 30vh; /* Default 'Peek' height (30%) */
+                background: white;
+                border-radius: 20px 20px 0 0; /* Modern rounded top */
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+                z-index: 2000; /* Higher than search bar (1000) */
+                
+                /* Layout */
+                display: flex;
+                flex-direction: column;
+                
+                /* Animation */
+                transition: height 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+                will-change: height;
             }
+            
+            /* Hide sidebar initially */
+            .results-sidebar:not(.visible) {
+                transform: translateY(100%); /* Slide down off screen */
+            }
+            
+            /* Handle Bar Styling */
+            .sheet-handle-bar {
+                width: 100%;
+                padding: 12px 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: grab;
+                flex-shrink: 0; /* Prevent collapsing */
+                background: white;
+                border-radius: 20px 20px 0 0;
+                touch-action: none; /* Critical: prevents browser scroll while dragging */
+            }
+            
+            .sheet-handle {
+                width: 40px;
+                height: 5px;
+                background: #e0e0e0;
+                border-radius: 3px;
+            }
+            
+            /* Adjust scrolling for list inside sheet */
+            .results-list {
+                overscroll-behavior: contain; /* Prevent scrolling parent */
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Ensure content inside doesn't get clipped */
+            .stats-container {
+                border-radius: 0; /* Remove rounded corners inside sheet */
+            }
+        }
+        
+        /* Hide handle on desktop */
+        @media (min-width: 769px) {
+            .sheet-handle-bar { display: none; }
         }
         
         /* Persistent tooltip for selected marker */
@@ -1239,6 +1300,10 @@
 
 <!-- Results sidebar -->
 <div class="results-sidebar" id="resultsSidebar">
+    <div class="sheet-handle-bar" id="sheetHandle">
+        <div class="sheet-handle"></div>
+    </div>
+    
     <div class="stats-container" id="statsContainer">
         <div class="stats-header" onclick="toggleStats()">
             <div class="stats-grid">
@@ -2789,7 +2854,100 @@ const originalApplyFilters = applyFilters;
 applyFilters = function() {
     originalApplyFilters();
     updateClearAllButton();
+    
+    // NEW: Auto-snap to 50% on Mobile when filters change
+    if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById('resultsSidebar');
+        if (sidebar && sidebar.classList.contains('visible')) {
+            // Only expand if currently in "peek" mode (less than 40vh)
+            const currentVh = (sidebar.getBoundingClientRect().height / window.innerHeight) * 100;
+            if (currentVh < 40) {
+                sidebar.style.height = '50vh';
+            }
+        }
+    }
 };
+
+// --- Mobile Bottom Sheet Logic ---
+
+const sheet = document.getElementById('resultsSidebar');
+const handle = document.getElementById('sheetHandle');
+
+// Snap points (percentage of screen height)
+const SNAP_PEEK = 30; // 30%
+const SNAP_HALF = 50; // 50%
+const SNAP_FULL = 95; // 95% (nearly top)
+
+let touchStartY = 0;
+let touchStartHeight = 0;
+let isTouchDragging = false;
+
+// Helper to set height safely
+function setSheetHeight(vh) {
+    if (window.innerWidth > 768) return; // Disable on desktop
+    requestAnimationFrame(() => {
+        sheet.style.height = `${vh}vh`;
+    });
+}
+
+// 1. Touch Start
+handle.addEventListener('touchstart', (e) => {
+    if (window.innerWidth > 768) return;
+    isTouchDragging = true;
+    touchStartY = e.touches[0].clientY;
+    
+    // Get current height in pixels, convert to VH
+    const rect = sheet.getBoundingClientRect();
+    touchStartHeight = (rect.height / window.innerHeight) * 100;
+    
+    // Disable transition during drag for instant response
+    sheet.style.transition = 'none';
+}, { passive: true });
+
+// 2. Touch Move
+document.addEventListener('touchmove', (e) => {
+    if (!isTouchDragging) return;
+    
+    const currentY = e.touches[0].clientY;
+    const deltaY = touchStartY - currentY; // Dragging UP is positive delta
+    
+    // Convert pixels to VH
+    const deltaVH = (deltaY / window.innerHeight) * 100;
+    let newHeight = touchStartHeight + deltaVH;
+    
+    // Limits
+    if (newHeight < 10) newHeight = 10;
+    if (newHeight > 100) newHeight = 100;
+    
+    sheet.style.height = `${newHeight}vh`;
+}, { passive: true });
+
+// 3. Touch End (Snap Logic)
+document.addEventListener('touchend', () => {
+    if (!isTouchDragging) return;
+    isTouchDragging = false;
+    
+    // Re-enable smooth transition for the snap
+    sheet.style.transition = 'height 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
+    
+    // Get final height to determine where to snap
+    const rect = sheet.getBoundingClientRect();
+    const currentVh = (rect.height / window.innerHeight) * 100;
+    
+    // Determine closest snap point
+    let targetVh = SNAP_PEEK;
+    
+    // Simple logic: if pulled past 40%, go to half. If past 75%, go full.
+    if (currentVh > 75) {
+        targetVh = SNAP_FULL;
+    } else if (currentVh > 40) {
+        targetVh = SNAP_HALF;
+    } else {
+        targetVh = SNAP_PEEK;
+    }
+    
+    setSheetHeight(targetVh);
+});
 
 
 
