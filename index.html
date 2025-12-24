@@ -47,13 +47,14 @@
         
         /* 
          * Z-INDEX STACK (Mobile):
-         * 1   = Map (base layer)
-         * 999 = Backdrop overlay (when dropdown open)
+         * 1    = Map (base layer)
+         * 999  = Backdrop overlay (when dropdown open)
          * 1000 = Search bar container (.floating-search)
-         * 10001 = Dropdown sheet (inside search bar container)
+         * 2000 = Results sidebar / Facility list (bottom sheet on mobile)
+         * 9999 = Filter dropdowns (must be WELL ABOVE everything else)
          * 
-         * This ensures backdrop sits BETWEEN map and search bar,
-         * so dropdown options remain clickable.
+         * Filter dropdowns use extremely high z-index to escape any stacking contexts
+         * created by transforms on the results-sidebar.
          */
         
         /* Floating search bar container */
@@ -1038,7 +1039,7 @@
                 flex-shrink: 0;
             }
             
-            /* MOBILE DROPDOWNS: Bottom Sheet Pattern (iOS Action Sheet style) */
+            /* MOBILE DROPDOWNS: Bottom Sheet Pattern (matches facility list style) */
             .filter-dropdown {
                 position: fixed !important;
                 bottom: -100vh;  /* Start off-screen below */
@@ -1053,11 +1054,12 @@
                 max-width: none;
                 width: 100%;
                 max-height: 70vh;
-                border-radius: 16px 16px 0 0;
-                box-shadow: 0 -4px 24px rgba(0,0,0,0.3);
-                z-index: 10001;
+                border-radius: 20px 20px 0 0;  /* Match facility list rounded top */
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.15);  /* Match facility list shadow */
+                z-index: 9999 !important;  /* CRITICAL: Well above facility list (2000) - use !important to override any parent stacking contexts */
                 padding-top: 8px;
                 padding-bottom: env(safe-area-inset-bottom, 16px);
+                isolation: isolate;  /* Create new stacking context to prevent z-index issues */
             }
             
             .filter-dropdown.visible {
@@ -1069,19 +1071,20 @@
                             visibility 0s 0s;  /* Show immediately when opening */
             }
             
-            /* Handle/grip at top */
+            /* Handle/grip at top - matches facility list */
             .filter-dropdown::before {
                 content: '';
                 display: block;
-                width: 36px;
-                height: 4px;
+                width: 40px;
+                height: 5px;
                 background: rgba(0,0,0,0.2);
-                border-radius: 2px;
+                border-radius: 3px;
                 margin: 8px auto 12px;
                 left: auto;  /* Override desktop styles */
                 transform: none;
                 top: auto;
                 position: static;
+                border: none;  /* Override desktop arrow styles */
             }
             
             /* No arrow needed for bottom sheets */
@@ -1089,7 +1092,7 @@
                 display: none;
             }
             
-            /* Backdrop overlay - BETWEEN map (1) and search bar (1000) */
+            /* Backdrop overlay - ABOVE facility list, BELOW filter dropdowns */
             body.dropdown-open::before {
                 content: '';
                 position: fixed;
@@ -1100,7 +1103,7 @@
                 background: rgba(0,0,0,0.4);
                 backdrop-filter: blur(2px);  /* Frosted glass effect */
                 -webkit-backdrop-filter: blur(2px);  /* Safari */
-                z-index: 999;  /* CRITICAL: Between map (1) and search bar (1000) */
+                z-index: 2500;  /* CRITICAL: Above facility list (2000), below filter dropdowns (9999) */
                 animation: fadeIn 0.3s;
             }
             
@@ -1145,7 +1148,7 @@
                 transform: translateY(100%); /* Slide down off screen */
             }
             
-            /* Handle Bar Styling */
+            /* Handle Bar Styling - matches stats container gray */
             .sheet-handle-bar {
                 width: 100%;
                 padding: 12px 0;
@@ -1154,7 +1157,7 @@
                 align-items: center;
                 cursor: grab;
                 flex-shrink: 0; /* Prevent collapsing */
-                background: white;
+                background: linear-gradient(135deg, var(--primary) 0%, #979797 100%);  /* Match stats container */
                 border-radius: 20px 20px 0 0;
                 touch-action: none; /* Critical: prevents browser scroll while dragging */
             }
@@ -1162,7 +1165,7 @@
             .sheet-handle {
                 width: 40px;
                 height: 5px;
-                background: #e0e0e0;
+                background: rgba(255, 255, 255, 0.5);  /* Semi-transparent white for visibility on gray */
                 border-radius: 3px;
             }
             
