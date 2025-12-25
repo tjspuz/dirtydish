@@ -1104,7 +1104,7 @@
                 background: rgba(0,0,0,0.4);
                 backdrop-filter: blur(2px);  /* Frosted glass effect */
                 -webkit-backdrop-filter: blur(2px);  /* Safari */
-                z-index: 999;  /* CRITICAL: Between map (1) and search bar (1000) */
+                z-index: 2005;  /* CRITICAL: Between map (1) and search bar (1000) */
                 animation: fadeIn 0.3s;
             }
             
@@ -1205,6 +1205,14 @@
             .stats-container.collapsed .stat-label {
                 font-size: 0.5rem !important;
             }
+
+
+        }
+
+        /* CRITICAL: Lift search container above the backdrop */
+    body.dropdown-open .floating-search {
+    z-index: 2010 !important; /* Highest priority: sits above the blur */
+    position: relative; /* Ensure z-index applies */
         }
     </style>
 </head>
