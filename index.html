@@ -1645,8 +1645,9 @@ function getColor(riskLevel) {
     }
 }
 
-// Helper: Center map with vertical offset for mobile
-// Places the target latitude/longitude at 30% from the top of the screen (70% up)
+// Helper: Center map with vertical AND horizontal offset for mobile
+// Vertical: Places target at 30% from top (70% up from bottom)
+// Horizontal: Places target at 30% from left (leaving 70% space on right for tooltip)
 function setViewWithMobileOffset(lat, lng, targetZoom) {
     if (window.innerWidth <= 768) {
         const targetLatLng = L.latLng(lat, lng);
@@ -1654,14 +1655,27 @@ function setViewWithMobileOffset(lat, lng, targetZoom) {
         // 1. Project the target coordinates to global map pixels at the destination zoom
         const targetPoint = map.project(targetLatLng, targetZoom);
         
-        // 2. Calculate the offset
-        // We want the Target at 30% screen height. The Map Center is always at 50%.
-        // So we need to shift the Center DOWN by (50% - 30%) = 20% of screen height.
-        // Positive Y in pixels = Downwards direction.
-        const offsetPixels = window.innerHeight * 0.20;
+        // 2. Calculate the offsets
         
-        // 3. Create a new center point 20% 'south' (pixels down) of the target
-        const centerPoint = L.point(targetPoint.x, targetPoint.y + offsetPixels);
+        // Vertical Offset:
+        // We want Target at 30% from top. The Center is at 50%.
+        // Therefore, we need to push the Center DOWN by 20% of the screen height.
+        // (Moving Center Down = Adding Y pixels)
+        const offsetPixelsY = window.innerHeight * 0.20;
+        
+        // Horizontal Offset:
+        // We want Target at 30% from left. The Center is at 50%.
+        // Therefore, we need to push the Center RIGHT by 20% of the screen width.
+        // (Moving Center Right = Adding X pixels)
+        const offsetPixelsX = window.innerWidth * 0.20;
+        
+        // 3. Create a new center point by ADDING the offsets
+        // By placing the "Center" to the South-East of the target,
+        // the target appears to the North-West (Top-Left) of the screen.
+        const centerPoint = L.point(
+            targetPoint.x + offsetPixelsX, 
+            targetPoint.y + offsetPixelsY
+        );
         
         // 4. Unproject back to LatLng and set view
         const centerLatLng = map.unproject(centerPoint, targetZoom);
