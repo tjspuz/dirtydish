@@ -1645,6 +1645,33 @@ function getColor(riskLevel) {
     }
 }
 
+// Helper: Center map with vertical offset for mobile
+// Places the target latitude/longitude at 30% from the top of the screen (70% up)
+function setViewWithMobileOffset(lat, lng, targetZoom) {
+    if (window.innerWidth <= 768) {
+        const targetLatLng = L.latLng(lat, lng);
+        
+        // 1. Project the target coordinates to global map pixels at the destination zoom
+        const targetPoint = map.project(targetLatLng, targetZoom);
+        
+        // 2. Calculate the offset
+        // We want the Target at 30% screen height. The Map Center is always at 50%.
+        // So we need to shift the Center DOWN by (50% - 30%) = 20% of screen height.
+        // Positive Y in pixels = Downwards direction.
+        const offsetPixels = window.innerHeight * 0.20;
+        
+        // 3. Create a new center point 20% 'south' (pixels down) of the target
+        const centerPoint = L.point(targetPoint.x, targetPoint.y + offsetPixels);
+        
+        // 4. Unproject back to LatLng and set view
+        const centerLatLng = map.unproject(centerPoint, targetZoom);
+        map.setView(centerLatLng, targetZoom, { animate: true });
+    } else {
+        // Desktop: Standard center behavior
+        map.setView([lat, lng], targetZoom, { animate: true });
+    }
+}
+
 // Render markers on map
 function renderMarkers(data) {
     markersCluster.clearLayers();
@@ -1686,8 +1713,8 @@ function renderMarkers(data) {
             // Center on marker, but don't zoom out if already closer
             const currentZoom = map.getZoom();
             const targetZoom = Math.max(currentZoom, 18); // Zoom to 18 to ensure individual marker (breaks clusters)
-            map.setView([r.lat, r.lng], targetZoom, { animate: true });
-            
+            // NEW: Use offset helper
+            setViewWithMobileOffset(r.lat, r.lng, targetZoom);
             // Make tooltip persistent
             showPersistentTooltip(marker, tooltipContent);
             
@@ -2285,10 +2312,10 @@ function toggleDetails(item, establishment) {
         selectedEstablishment = establishment;
         
         // Center map on this location with zoom
+        // Center map on this location with zoom
         if (establishment.lat && establishment.lng) {
-            // Zoom to level 18 (closer) when clicking from list to avoid cluster issues
-            // This ensures individual markers are visible even when facilities are close together
-            map.setView([establishment.lat, establishment.lng], 18, { animate: true });
+            // NEW: Use offset helper
+            setViewWithMobileOffset(establishment.lat, establishment.lng, 18);
             
             // Show persistent tooltip
             const color = getColor(establishment.riskLevel);
