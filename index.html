@@ -51,10 +51,9 @@
          * 999  = Backdrop overlay (when dropdown open)
          * 1000 = Search bar container (.floating-search)
          * 2000 = Results sidebar / Facility list (bottom sheet on mobile)
-         * 9999 = Filter dropdowns (must be WELL ABOVE everything else)
+         * 3000 = Filter dropdowns (must be above facility list)
          * 
-         * Filter dropdowns use extremely high z-index to escape any stacking contexts
-         * created by transforms on the results-sidebar.
+         * This ensures filter dropdowns appear ABOVE the facility list bottom sheet.
          */
         
         /* Floating search bar container */
@@ -67,6 +66,11 @@
             gap: 10px;
             align-items: flex-start;
         }
+
+        /* CRITICAL FIX: Lift search container above sidebar when dropdown is open */
+    body.dropdown-open .floating-search {
+    z-index: 2001 !important; /* Higher than results-sidebar (2000) */
+    }
         
         .search-wrapper {
             width: 400px;
@@ -382,8 +386,7 @@
         /* Stats container */
         .stats-container {
             background: linear-gradient(135deg, var(--primary) 0%, #979797 100%);
-            padding: 16px;
-            color: white;
+            padding: 4px 16px 16px 16px; /* Reduced top padding from 16px to 4px */            color: white;
             border-radius: 8px 8px 0 0;
             transition: padding 0.3s ease;
         }
@@ -459,8 +462,7 @@
             max-height: 500px;
             overflow: hidden;
             transition: max-height 0.3s ease, margin-top 0.3s ease;
-            margin-top: 16px;
-        }
+            margin-top: 8px; /* Reduced from 16px */        }
         
         .stats-gauges.collapsed {
             max-height: 0;
@@ -469,8 +471,8 @@
         
         /* Gauge sections */
         .gauge-section {
-            margin-top: 16px;
-            padding: 6px 0;  /* Vertical padding to prevent clipping when segments expand */
+            margin-top: 8px; /* Reduced from 16px */
+            padding: 2px 0;  /* Reduced from 6px */
             position: relative;  /* Added for tooltip positioning context */
         }
         
@@ -1056,10 +1058,9 @@
                 max-height: 70vh;
                 border-radius: 20px 20px 0 0;  /* Match facility list rounded top */
                 box-shadow: 0 -4px 20px rgba(0,0,0,0.15);  /* Match facility list shadow */
-                z-index: 9999 !important;  /* CRITICAL: Well above facility list (2000) - use !important to override any parent stacking contexts */
+                z-index: 3000;  /* CRITICAL: Above facility list (2000) */
                 padding-top: 8px;
                 padding-bottom: env(safe-area-inset-bottom, 16px);
-                isolation: isolate;  /* Create new stacking context to prevent z-index issues */
             }
             
             .filter-dropdown.visible {
@@ -1092,7 +1093,7 @@
                 display: none;
             }
             
-            /* Backdrop overlay - ABOVE facility list, BELOW filter dropdowns */
+            /* Backdrop overlay - BETWEEN map (1) and search bar (1000) */
             body.dropdown-open::before {
                 content: '';
                 position: fixed;
@@ -1103,7 +1104,7 @@
                 background: rgba(0,0,0,0.4);
                 backdrop-filter: blur(2px);  /* Frosted glass effect */
                 -webkit-backdrop-filter: blur(2px);  /* Safari */
-                z-index: 2500;  /* CRITICAL: Above facility list (2000), below filter dropdowns (9999) */
+                z-index: 999;  /* CRITICAL: Between map (1) and search bar (1000) */
                 animation: fadeIn 0.3s;
             }
             
@@ -1151,7 +1152,7 @@
             /* Handle Bar Styling - matches stats container gray */
             .sheet-handle-bar {
                 width: 100%;
-                padding: 12px 0;
+                padding: 6px 0;
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -1160,6 +1161,7 @@
                 background: linear-gradient(135deg, var(--primary) 0%, #979797 100%);  /* Match stats container */
                 border-radius: 20px 20px 0 0;
                 touch-action: none; /* Critical: prevents browser scroll while dragging */
+                z-index: 2002; /* Ensure handle is clickable */
             }
             
             .sheet-handle {
