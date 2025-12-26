@@ -1544,15 +1544,22 @@ function initMap() {
         const cluster = a.layer;
         const childMarkers = cluster.getAllChildMarkers();
         
-        // Only zoom if we haven't spiderfied yet (more than 1 marker in same location)
-        if (childMarkers.length > 1 && map.getZoom() < map.getMaxZoom()) {
-            cluster.zoomToBounds({ padding: [20, 20] });
+        if (childMarkers.length > 1) {
+            // Calculate the zoom level the cluster would normally zoom to
+            const maxZoom = map.getMaxZoom();
+            const bounds = cluster.getBounds();
+            const targetZoom = map.getBoundsZoom(bounds);
+
+            // If we can zoom further, do custom centering
+            if (targetZoom <= maxZoom) {
+                const center = bounds.getCenter();
+                // Use new vertical-only offset helper
+                setViewWithMobileOffsetVerticalOnly(center.lat, center.lng, targetZoom);
+            } else {
+                // If we are at max zoom, let it spiderfy (spread out)
+                cluster.spiderfy();
+            }
         }
-    });
-    
-    // Update stats when map view changes (zoom/pan)
-    map.on('moveend', function() {
-        updateStatsFromMapView();
     });
 }
 
@@ -1642,6 +1649,31 @@ function getColor(riskLevel) {
         case 'MAJOR': return '#ff0800';
         case 'CRITICAL': return '#6f0000';
         default: return '#95a5a6';
+    }
+}
+
+
+// Helper: Vertical-only offset for Clusters (Mobile)
+// Places target at 30% from top, but keeps it horizontally centered.
+function setViewWithMobileOffsetVerticalOnly(lat, lng, targetZoom) {
+    if (window.innerWidth <= 768) {
+        const targetLatLng = L.latLng(lat, lng);
+        const targetPoint = map.project(targetLatLng, targetZoom);
+        
+        // Vertical Offset: Push center down by 20% of screen height
+        // This moves the target UP to the 30% mark.
+        const offsetPixelsY = window.innerHeight * 0.20;
+        
+        // No Horizontal offset (keep original X)
+        const centerPoint = L.point(
+            targetPoint.x, 
+            targetPoint.y + offsetPixelsY
+        );
+        
+        const centerLatLng = map.unproject(centerPoint, targetZoom);
+        map.setView(centerLatLng, targetZoom, { animate: true });
+    } else {
+        map.setView([lat, lng], targetZoom, { animate: true });
     }
 }
 
@@ -2922,88 +2954,131 @@ applyFilters = function() {
     }
 };
 
-// --- Mobile Bottom Sheet Logic ---
+// --- Advanced Mobile Bottom Sheet Logic (with Velocity & Header Drag) ---
 
 const sheet = document.getElementById('resultsSidebar');
 const handle = document.getElementById('sheetHandle');
+const header = document.getElementById('statsContainer'); // Add header as drag target
 
 // Snap points (percentage of screen height)
-const SNAP_PEEK = 30; // 30%
-const SNAP_HALF = 50; // 50%
-const SNAP_FULL = 95; // 95% (nearly top)
+const SNAP_PEEK = 30; 
+const SNAP_HALF = 50; 
+const SNAP_FULL = 95; 
 
-let touchStartY = 0;
-let touchStartHeight = 0;
-let isTouchDragging = false;
+// Physics variables
+let startY = 0;
+let startHeight = 0;
+let startTime = 0;
+let isDragging = false;
 
 // Helper to set height safely
 function setSheetHeight(vh) {
-    if (window.innerWidth > 768) return; // Disable on desktop
+    if (window.innerWidth > 768) return; 
     requestAnimationFrame(() => {
         sheet.style.height = `${vh}vh`;
     });
 }
 
-// 1. Touch Start
-handle.addEventListener('touchstart', (e) => {
+// Unified Drag Start Handler
+function onDragStart(e) {
     if (window.innerWidth > 768) return;
-    isTouchDragging = true;
-    touchStartY = e.touches[0].clientY;
+    
+    // Only allow dragging if we touch the handle OR the header
+    // But do NOT trigger if touching the internal scrollable list or buttons
+    if (e.target.closest('.results-list') || e.target.closest('.stats-toggle')) return;
+
+    isDragging = true;
+    const touch = e.touches ? e.touches[0] : e;
+    startY = touch.clientY;
+    startTime = new Date().getTime(); // Record time for velocity
     
     // Get current height in pixels, convert to VH
     const rect = sheet.getBoundingClientRect();
-    touchStartHeight = (rect.height / window.innerHeight) * 100;
+    startHeight = (rect.height / window.innerHeight) * 100;
     
-    // Disable transition during drag for instant response
+    // Disable transition for instant response
     sheet.style.transition = 'none';
-}, { passive: true });
+}
 
-// 2. Touch Move
-document.addEventListener('touchmove', (e) => {
-    if (!isTouchDragging) return;
+// Unified Drag Move Handler
+function onDragMove(e) {
+    if (!isDragging) return;
+    e.preventDefault(); // Stop scrolling while dragging the sheet
     
-    const currentY = e.touches[0].clientY;
-    const deltaY = touchStartY - currentY; // Dragging UP is positive delta
+    const touch = e.touches ? e.touches[0] : e;
+    const currentY = touch.clientY;
+    const deltaY = startY - currentY; // Dragging UP is positive
     
     // Convert pixels to VH
     const deltaVH = (deltaY / window.innerHeight) * 100;
-    let newHeight = touchStartHeight + deltaVH;
+    let newHeight = startHeight + deltaVH;
     
-    // Limits
-    if (newHeight < 10) newHeight = 10;
-    if (newHeight > 100) newHeight = 100;
+    // Elastic resistance at limits (Rubber banding effect)
+    if (newHeight > 100) newHeight = 100 + (newHeight - 100) * 0.2;
+    if (newHeight < 10) newHeight = 10 + (newHeight - 10) * 0.2;
     
     sheet.style.height = `${newHeight}vh`;
-}, { passive: true });
+}
 
-// 3. Touch End (Snap Logic)
-document.addEventListener('touchend', () => {
-    if (!isTouchDragging) return;
-    isTouchDragging = false;
+// Unified Drag End Handler (with Velocity)
+function onDragEnd(e) {
+    if (!isDragging) return;
+    isDragging = false;
     
-    // Re-enable smooth transition for the snap
+    const endTime = new Date().getTime();
+    const touch = e.changedTouches ? e.changedTouches[0] : e;
+    const endY = touch.clientY;
+    
+    // Calculate Velocity (pixels per ms)
+    // Negative velocity = Flick Up, Positive = Flick Down
+    const distance = endY - startY;
+    const duration = endTime - startTime;
+    const velocity = distance / duration; 
+    
+    // Re-enable smooth transition
     sheet.style.transition = 'height 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
     
-    // Get final height to determine where to snap
+    // Get final height
     const rect = sheet.getBoundingClientRect();
     const currentVh = (rect.height / window.innerHeight) * 100;
     
-    // Determine closest snap point
     let targetVh = SNAP_PEEK;
-    
-    // Simple logic: if pulled past 40%, go to half. If past 75%, go full.
-    if (currentVh > 75) {
-        targetVh = SNAP_FULL;
-    } else if (currentVh > 40) {
-        targetVh = SNAP_HALF;
+
+    // Logic: Combine Position AND Velocity
+    // If flicked fast (> 0.5 px/ms), obey the flick direction
+    if (Math.abs(velocity) > 0.5) {
+        if (velocity < 0) { 
+            // Flicked UP
+            targetVh = currentVh > 40 ? SNAP_FULL : SNAP_HALF;
+        } else {
+            // Flicked DOWN
+            targetVh = currentVh > 60 ? SNAP_HALF : SNAP_PEEK;
+        }
     } else {
-        targetVh = SNAP_PEEK;
+        // Slow drag: snap to closest
+        if (currentVh > 75) {
+            targetVh = SNAP_FULL;
+        } else if (currentVh > 40) {
+            targetVh = SNAP_HALF;
+        } else {
+            targetVh = SNAP_PEEK;
+        }
     }
     
     setSheetHeight(targetVh);
+}
+
+// Attach listeners to Handle AND Header
+[handle, header].forEach(el => {
+    el.addEventListener('touchstart', onDragStart, { passive: false });
+    el.addEventListener('mousedown', onDragStart); // Mouse support for testing
 });
 
+document.addEventListener('touchmove', onDragMove, { passive: false });
+document.addEventListener('mousemove', onDragMove);
 
+document.addEventListener('touchend', onDragEnd);
+document.addEventListener('mouseup', onDragEnd);
 
 
 </script>
