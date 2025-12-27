@@ -1588,7 +1588,7 @@ function initMap() {
             // If we can zoom further, do custom centering WITH MOBILE OFFSET
             if (targetZoom <= maxZoom) {
                 const center = bounds.getCenter();
-                // UPDATED: Use full mobile offset for clusters (not just vertical)
+                // Use full mobile offset for clusters
                 setViewWithMobileOffset(center.lat, center.lng, targetZoom);
             } else {
                 // If we are at max zoom, let it spiderfy (spread out)
@@ -1804,11 +1804,11 @@ function showPersistentTooltip(marker, content) {
     .addTo(map);
 }
 
-// Auto-zoom map to fit all filtered results
+// Auto-zoom map to fit all filtered results WITH MOBILE OFFSET
 function autoZoomToResults(results) {
     if (!results || results.length === 0) {
         // No results - reset to default view
-        map.setView([41.5868, -93.6250], 12);
+        map.setView([41.8486, -90.3312], 11);
         return;
     }
     
@@ -1820,20 +1820,38 @@ function autoZoomToResults(results) {
     }
     
     if (validResults.length === 1) {
-        // Single result - zoom to it
-        map.setView([validResults[0].lat, validResults[0].lng], 15, { animate: true });
+        // FIXED: Single result - use mobile offset zoom
+        setViewWithMobileOffset(validResults[0].lat, validResults[0].lng, 15);
         return;
     }
     
-    // Multiple results - create bounds and fit
+    // FIXED: Multiple results - adjust padding for mobile bottom sheet
     const bounds = L.latLngBounds(validResults.map(r => [r.lat, r.lng]));
     
-    map.fitBounds(bounds, {
-        padding: [50, 50], // Add padding around edges
-        maxZoom: 16,       // Don't zoom in too close
-        animate: true,
-        duration: 0.5      // Smooth animation
-    });
+    // Dynamic padding based on device
+    let paddingOptions;
+    if (window.innerWidth <= 768) {
+        // Mobile: Add extra bottom padding to account for bottom sheet
+        // Assuming sheet is at 50vh = 50% of screen height
+        const bottomSheetPadding = window.innerHeight * 0.55; // 55% to account for sheet + margin
+        paddingOptions = {
+            paddingTopLeft: [50, 100],        // Top-left: small padding
+            paddingBottomRight: [50, bottomSheetPadding], // Bottom-right: large padding for sheet
+            maxZoom: 16,
+            animate: true,
+            duration: 0.5
+        };
+    } else {
+        // Desktop: Standard padding
+        paddingOptions = {
+            padding: [50, 50],
+            maxZoom: 16,
+            animate: true,
+            duration: 0.5
+        };
+    }
+    
+    map.fitBounds(bounds, paddingOptions);
 }
 
 // Apply filters and show results
@@ -2003,7 +2021,7 @@ function applyFilters() {
     updateStats(filteredWithScores);
     renderResults(filteredWithScores);
     
-    // Auto-zoom map to fit all results
+    // FIXED: Auto-zoom map to fit all results WITH MOBILE OFFSET
     autoZoomToResults(filteredWithScores);
     
     // Show sidebar if there are results
