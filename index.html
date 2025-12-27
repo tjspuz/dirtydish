@@ -843,7 +843,7 @@
             font-size: 0.9rem;
         }
         
-        /* Legend at bottom */
+        /* Legend/About at bottom - CONSOLIDATED */
         .legend-container {
             background: var(--bg-light);
             padding: 16px;
@@ -919,6 +919,44 @@
         
         .legend-content.collapsed {
             max-height: 0;
+        }
+        
+        /* About section content */
+        .about-section {
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .about-section p {
+            margin-bottom: 12px;
+            line-height: 1.6;
+            font-size: 0.85rem;
+        }
+        
+        .about-section p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .about-section a {
+            color: var(--primary);
+            text-decoration: underline;
+        }
+        
+        /* Risk guide section within about */
+        .risk-guide-section {
+            margin-top: 16px;
+        }
+        
+        .risk-guide-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .legend-row {
@@ -1205,14 +1243,12 @@
             .stats-container.collapsed .stat-label {
                 font-size: 0.5rem !important;
             }
-
-
         }
 
         /* CRITICAL: Lift search container above the backdrop */
-    body.dropdown-open .floating-search {
-    z-index: 2010 !important; /* Highest priority: sits above the blur */
-    position: relative; /* Ensure z-index applies */
+        body.dropdown-open .floating-search {
+            z-index: 2010 !important; /* Highest priority: sits above the blur */
+            position: relative; /* Ensure z-index applies */
         }
     </style>
 </head>
@@ -1379,72 +1415,68 @@
     
     <div class="results-list" id="resultsList"></div>
     
-    <div class="legend-container collapsed">
-        <div class="legend-header collapsed" onclick="toggleLegend()">
-            <div class="legend-title-with-dots">
-                <span class="legend-title">Risk Guide</span>
-                <div class="legend-dots-inline">
-                    <span class="dot-inline" style="background: var(--color-none);"></span>
-                    <span class="dot-inline" style="background: var(--color-minor);"></span>
-                    <span class="dot-inline" style="background: var(--color-moderate);"></span>
-                    <span class="dot-inline" style="background: var(--color-major);"></span>
-                    <span class="dot-inline" style="background: var(--color-critical);"></span>
-                </div>
-            </div>
-            <div class="legend-toggle collapsed" id="legendToggle">▼</div>
-        </div>
-        <div class="legend-content collapsed" id="legendContent">
-            <div class="legend-row">
-                <span class="dot" style="background: var(--color-none);"></span>
-                <strong>None</strong> – No violations (0 pts)
-            </div>
-            <div class="legend-row">
-                <span class="dot" style="background: var(--color-minor);"></span>
-                <strong>Minor</strong> – Few issues (1-14 pts)
-            </div>
-            <div class="legend-row">
-                <span class="dot" style="background: var(--color-moderate);"></span>
-                <strong>Moderate</strong> – Multiple issues (15-50 pts)
-            </div>
-            <div class="legend-row">
-                <span class="dot" style="background: var(--color-major);"></span>
-                <strong>Major</strong> – Serious concerns (51-75 pts)
-            </div>
-            <div class="legend-row">
-                <span class="dot" style="background: var(--color-critical);"></span>
-                <strong>Critical</strong> – Major hazards (76+ pts)
-            </div>
-        </div>
-    </div>
-    
-    <!-- About Section (matches Risk Guide style) -->
+    <!-- CONSOLIDATED About Section (includes Risk Guide) -->
     <div class="legend-container collapsed">
         <div class="legend-header collapsed" onclick="toggleAbout()">
             <div class="legend-title-with-dots">
-                <span class="legend-title">About</span>
+                <span class="legend-title">About & Risk Guide</span>
                 <i class="fas fa-info-circle" style="font-size: 0.75rem; opacity: 0.7; margin-left: 6px;"></i>
             </div>
             <div class="legend-toggle collapsed" id="aboutToggle">▼</div>
         </div>
         <div class="legend-content collapsed" id="aboutContent">
-            <div class="legend-row" style="display: block; padding: 8px 0;">
-                <p style="margin-bottom: 12px; line-height: 1.6; font-size: 0.85rem;">
+            <!-- About Section -->
+            <div class="about-section">
+                <p>
                     This interactive map displays health inspection data for restaurants and food service 
                     establishments. Violations are classified using the FDA Food Code system with a 4-tier 
                     risk scoring model.
                 </p>
-                <p style="margin-bottom: 12px; line-height: 1.6; font-size: 0.85rem;">
+                <p>
                     <strong>Data Source:</strong> Iowa Department of Inspections & Appeals
                 </p>
-                <p style="margin-bottom: 12px; line-height: 1.6; font-size: 0.85rem;">
+                <p>
                     <strong>Last Updated:</strong> December 2025
                 </p>
-                <p style="margin: 0; line-height: 1.6; font-size: 0.85rem;">
-                    <a href="https://iowa.safefoodinspection.com" target="_blank" rel="noopener noreferrer" 
-                       style="color: var(--primary); text-decoration: underline;">
+                <p>
+                    <a href="https://iowa.safefoodinspection.com" target="_blank" rel="noopener noreferrer">
                         View Official Database →
                     </a>
                 </p>
+            </div>
+            
+            <!-- Risk Guide Section (within About) -->
+            <div class="risk-guide-section">
+                <div class="risk-guide-title">
+                    <span>Risk Guide</span>
+                    <div class="legend-dots-inline">
+                        <span class="dot-inline" style="background: var(--color-none);"></span>
+                        <span class="dot-inline" style="background: var(--color-minor);"></span>
+                        <span class="dot-inline" style="background: var(--color-moderate);"></span>
+                        <span class="dot-inline" style="background: var(--color-major);"></span>
+                        <span class="dot-inline" style="background: var(--color-critical);"></span>
+                    </div>
+                </div>
+                <div class="legend-row">
+                    <span class="dot" style="background: var(--color-none);"></span>
+                    <strong>None</strong> — No violations (0 pts)
+                </div>
+                <div class="legend-row">
+                    <span class="dot" style="background: var(--color-minor);"></span>
+                    <strong>Minor</strong> — Few issues (1-14 pts)
+                </div>
+                <div class="legend-row">
+                    <span class="dot" style="background: var(--color-moderate);"></span>
+                    <strong>Moderate</strong> — Multiple issues (15-50 pts)
+                </div>
+                <div class="legend-row">
+                    <span class="dot" style="background: var(--color-major);"></span>
+                    <strong>Major</strong> — Serious concerns (51-75 pts)
+                </div>
+                <div class="legend-row">
+                    <span class="dot" style="background: var(--color-critical);"></span>
+                    <strong>Critical</strong> — Major hazards (76+ pts)
+                </div>
             </div>
         </div>
     </div>
@@ -1454,12 +1486,12 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 <script>
-// Toggle legend visibility
-function toggleLegend() {
+// Toggle about visibility (now includes risk guide)
+function toggleAbout() {
     const container = document.querySelector('.legend-container');
-    const header = document.querySelector('.legend-header');
-    const content = document.getElementById('legendContent');
-    const toggle = document.getElementById('legendToggle');
+    const header = container.querySelector('.legend-header');
+    const content = document.getElementById('aboutContent');
+    const toggle = document.getElementById('aboutToggle');
     
     container.classList.toggle('collapsed');
     header.classList.toggle('collapsed');
@@ -1467,21 +1499,6 @@ function toggleLegend() {
     toggle.classList.toggle('collapsed');
 }
 
-
-
-// Toggle about visibility
-function toggleAbout() {
-    const containers = document.querySelectorAll('.legend-container');
-    const aboutContainer = containers[1];  // Second legend-container is About
-    const header = aboutContainer.querySelector('.legend-header');
-    const content = document.getElementById('aboutContent');
-    const toggle = document.getElementById('aboutToggle');
-    
-    aboutContainer.classList.toggle('collapsed');
-    header.classList.toggle('collapsed');
-    content.classList.toggle('collapsed');
-    toggle.classList.toggle('collapsed');
-}
 // Toggle stats visibility
 function toggleStats() {
     const container = document.getElementById('statsContainer');
@@ -1514,6 +1531,24 @@ function debounce(func, wait) {
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(later, wait);
     };
+}
+
+// Helper function to format address for display (remove zip and state, apply title case)
+function formatAddressForDisplay(address) {
+    if (!address) return 'Address not available';
+    
+    // Remove zip code (5 digits at end) and state abbreviation (2 letters before zip)
+    // Pattern: address, city, IA 12345 -> address, city
+    let cleaned = address.replace(/,?\s*[A-Z]{2}\s+\d{5}(-\d{4})?$/i, '');
+    
+    // Apply title case
+    return toTitleCase(cleaned);
+}
+
+// Convert text to title case (natural English capitalization)
+function toTitleCase(str) {
+    if (!str) return str;
+    return str.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
 }
 
 // Initialize map
@@ -1550,11 +1585,11 @@ function initMap() {
             const bounds = cluster.getBounds();
             const targetZoom = map.getBoundsZoom(bounds);
 
-            // If we can zoom further, do custom centering
+            // If we can zoom further, do custom centering WITH MOBILE OFFSET
             if (targetZoom <= maxZoom) {
                 const center = bounds.getCenter();
-                // Use new vertical-only offset helper
-                setViewWithMobileOffsetVerticalOnly(center.lat, center.lng, targetZoom);
+                // UPDATED: Use full mobile offset for clusters (not just vertical)
+                setViewWithMobileOffset(center.lat, center.lng, targetZoom);
             } else {
                 // If we are at max zoom, let it spiderfy (spread out)
                 cluster.spiderfy();
@@ -1652,31 +1687,6 @@ function getColor(riskLevel) {
     }
 }
 
-
-// Helper: Vertical-only offset for Clusters (Mobile)
-// Places target at 30% from top, but keeps it horizontally centered.
-function setViewWithMobileOffsetVerticalOnly(lat, lng, targetZoom) {
-    if (window.innerWidth <= 768) {
-        const targetLatLng = L.latLng(lat, lng);
-        const targetPoint = map.project(targetLatLng, targetZoom);
-        
-        // Vertical Offset: Push center down by 20% of screen height
-        // This moves the target UP to the 30% mark.
-        const offsetPixelsY = window.innerHeight * 0.20;
-        
-        // No Horizontal offset (keep original X)
-        const centerPoint = L.point(
-            targetPoint.x, 
-            targetPoint.y + offsetPixelsY
-        );
-        
-        const centerLatLng = map.unproject(centerPoint, targetZoom);
-        map.setView(centerLatLng, targetZoom, { animate: true });
-    } else {
-        map.setView([lat, lng], targetZoom, { animate: true });
-    }
-}
-
 // Helper: Center map with vertical AND horizontal offset for mobile
 // Vertical: Places target at 30% from top (70% up from bottom)
 // Horizontal: Places target at 30% from left (leaving 70% space on right for tooltip)
@@ -1739,12 +1749,15 @@ function renderMarkers(data) {
             establishment: r
         });
         
-        // Create tooltip
+        // Create tooltip with formatted address
+        const formattedAddress = formatAddressForDisplay(r.addr);
+        const formattedName = toTitleCase(r.name);
+        
         const tooltipContent = `
-            <div style="font-weight:700;margin-bottom:6px;">${r.name}</div>
-            <div style="font-size:0.85rem;color:#666;margin-bottom:4px;">${r.addr}</div>
+            <div style="font-weight:700;margin-bottom:6px;">${formattedName}</div>
+            <div style="font-size:0.85rem;color:#666;margin-bottom:4px;">${formattedAddress}</div>
             <div style="font-size:0.85rem;">
-                <span style="font-weight:700;color:${color};">${r.riskLevel}</span> – 
+                <span style="font-weight:700;color:${color};">${r.riskLevel}</span> — 
                 Score: ${r.riskScore}
             </div>
         `;
@@ -1759,7 +1772,7 @@ function renderMarkers(data) {
             // Center on marker, but don't zoom out if already closer
             const currentZoom = map.getZoom();
             const targetZoom = Math.max(currentZoom, 18); // Zoom to 18 to ensure individual marker (breaks clusters)
-            // NEW: Use offset helper
+            // Use offset helper
             setViewWithMobileOffset(r.lat, r.lng, targetZoom);
             // Make tooltip persistent
             showPersistentTooltip(marker, tooltipContent);
@@ -2174,7 +2187,6 @@ function sortData(data) {
     return sorted;
 }
 
-// Render results list
 // Highlight search terms in text
 function highlightText(text, terms) {
     if (!text || !terms || terms.length === 0) {
@@ -2198,13 +2210,7 @@ function highlightText(text, terms) {
     return highlighted;
 }
 
-
-// Convert text to title case (natural English capitalization)
-function toTitleCase(str) {
-    if (!str) return str;
-    return str.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
-}
-
+// Render results list
 function renderResults(data) {
     const list = document.getElementById('resultsList');
     list.innerHTML = '';
@@ -2235,9 +2241,10 @@ function renderResults(data) {
             ? highlightText(toTitleCase(r.name || 'Unknown'), r.matchedTerms)
             : toTitleCase(r.name || 'Unknown');
         
+        const formattedAddress = formatAddressForDisplay(r.addr);
         const highlightedAddress = r.matchedTerms 
-            ? highlightText(toTitleCase(r.addr || 'Address not available'), r.matchedTerms)
-            : toTitleCase(r.addr || 'Address not available');
+            ? highlightText(formattedAddress, r.matchedTerms)
+            : formattedAddress;
         
         // Build violations HTML
         let violationsHTML = '';
@@ -2294,7 +2301,7 @@ function renderResults(data) {
                     <div class="violation-item ${tier} ${isKeywordMatch ? 'keyword-match' : ''}">
                         <div class="violation-code">${v.violationCode || 'N/A'}</div>
                         <div class="violation-badges">
-                            ${isKeywordMatch ? '<span class="violation-badge badge-match">🔍 Keyword Match</span>' : ''}
+                            ${isKeywordMatch ? '<span class="violation-badge badge-match">🔎 Keyword Match</span>' : ''}
                             <span class="violation-badge badge-tier ${tier}">${tierLabel}</span>
                             <span class="violation-badge badge-points">${points} pts</span>
                             ${fdaClass ? `<span class="violation-badge badge-fda">${fdaClass}</span>` : ''}
@@ -2331,7 +2338,7 @@ function renderResults(data) {
                         <span class="result-score">Violations: ${r.totalViolations || 0}</span>
                         <span>${r.inspectionDate || 'Date unknown'}</span>
                         ${r.matchedFields && r.matchedFields.includes('violation') ? 
-                            '<span style="color:#e67e22;font-weight:700;">🔍 Found in violations</span>' : ''}
+                            '<span style="color:#e67e22;font-weight:700;">🔎 Found in violations</span>' : ''}
                     </div>
                 </div>
                 <span class="result-badge" style="background:${color};">${r.riskLevel}</span>
@@ -2357,19 +2364,25 @@ function toggleDetails(item, establishment) {
         item.classList.add('expanded');
         selectedEstablishment = establishment;
         
-        // Center map on this location with zoom
+        // UPDATED: Scroll to show facility name at top, not violations
+        // Use scrollIntoView with 'start' alignment to put the header at the top
+        item.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
         // Center map on this location with zoom
         if (establishment.lat && establishment.lng) {
-            // NEW: Use offset helper
+            // Use offset helper
             setViewWithMobileOffset(establishment.lat, establishment.lng, 18);
             
-            // Show persistent tooltip
+            // Show persistent tooltip with formatted text
             const color = getColor(establishment.riskLevel);
+            const formattedName = toTitleCase(establishment.name);
+            const formattedAddress = formatAddressForDisplay(establishment.addr);
+            
             const tooltipContent = `
-                <div style="font-weight:700;margin-bottom:6px;">${establishment.name}</div>
-                <div style="font-size:0.85rem;color:#666;margin-bottom:4px;">${establishment.addr}</div>
+                <div style="font-weight:700;margin-bottom:6px;">${formattedName}</div>
+                <div style="font-size:0.85rem;color:#666;margin-bottom:4px;">${formattedAddress}</div>
                 <div style="font-size:0.85rem;">
-                    <span style="font-weight:700;color:${color};">${establishment.riskLevel}</span> – 
+                    <span style="font-weight:700;color:${color};">${establishment.riskLevel}</span> — 
                     Score: ${establishment.riskScore}
                 </div>
             `;
@@ -2407,15 +2420,14 @@ function showDetails(establishment) {
     items.forEach(item => {
         if (item.dataset.name === establishment.name && item.dataset.addr === establishment.addr) {
             item.classList.add('expanded');
-            item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // UPDATED: Scroll to show facility name at top
+            item.scrollIntoView({ behavior: 'smooth', block: 'start' });
             selectedEstablishment = establishment;
         } else {
             item.classList.remove('expanded');
         }
     });
 }
-
-// Enhanced autocomplete with multi-word fuzzy matching
 
 // Filter dropdown handlers
 function setupFilterDropdowns() {
@@ -3079,7 +3091,6 @@ document.addEventListener('mousemove', onDragMove);
 
 document.addEventListener('touchend', onDragEnd);
 document.addEventListener('mouseup', onDragEnd);
-
 
 </script>
 
