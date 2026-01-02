@@ -29,7 +29,7 @@
         
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
-            overflow: hidden;
+            overflow: visible;
             color: var(--text);
             margin: 0;
             padding: 0;
@@ -352,13 +352,13 @@
         
         /* Sort arrow indicator in dropdown */
         .filter-option.sort-asc::after {
-            content: ' ↓';
+            content: "\2191";  /* Up arrow */
             color: var(--primary);
             font-weight: bold;
         }
         
         .filter-option.sort-desc::after {
-            content: ' ↑';
+            content: "\2193";  /* Down arrow */
             color: var(--primary);
             font-weight: bold;
         }
@@ -460,20 +460,24 @@
         
         .stats-gauges {
             max-height: 500px;
-            overflow: hidden;
-            transition: max-height 0.3s ease, margin-top 0.3s ease;
-            margin-top: 8px; /* Reduced from 16px */        }
+            overflow: visible;  /* Allow tooltips to show above */
+            transition: max-height 0.3s ease, margin-top 0.3s ease, overflow 0s 0.3s;
+            margin-top: 8px;
+        }
         
         .stats-gauges.collapsed {
             max-height: 0;
             margin-top: 0;
+            overflow: hidden;  /* CRITICAL: Hide gauges when collapsed */
+            transition: max-height 0.3s ease, margin-top 0.3s ease, overflow 0s 0s;
         }
         
         /* Gauge sections */
         .gauge-section {
             margin-top: 8px; /* Reduced from 16px */
             padding: 2px 0;  /* Reduced from 6px */
-            position: relative;  /* Added for tooltip positioning context */
+            position: relative;  /* CHANGE 4: Stacking context for tooltips */
+            z-index: 5;  /* Added for tooltip positioning context */
         }
         
         .gauge-label {
@@ -489,7 +493,7 @@
             height: 32px;
             background: rgba(255,255,255,0.1);
             border-radius: 6px;
-            overflow: visible;  /* Allow borders and expansion to show */
+            overflow: visible;  /* CHANGE 4 & 5: Allow tooltips and use flexbox */
             position: relative;
             isolation: isolate;  /* Create new stacking context */
             margin: 6px 0;  /* Vertical margin to prevent clipping of expanded segments */
@@ -515,7 +519,7 @@
             cursor: pointer;
             transition: all 0.2s;
             position: relative;
-            min-width: 0;
+            min-width: 0;  /* CHANGE 5: flex-grow will be set dynamically */
             border: 3px solid transparent;
             box-sizing: border-box;
         }
@@ -566,7 +570,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s;
-            z-index: 100;
+            z-index: 1000;  /* CHANGE 4: Ensure tooltips appear above all */
         }
         
         .gauge-segment::after {
@@ -581,7 +585,7 @@
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s;
-            z-index: 100;
+            z-index: 1000;  /* CHANGE 4: Ensure tooltips appear above all */
         }
         
         .gauge-segment:hover::before,
@@ -1264,7 +1268,7 @@
 <!-- Floating search bar and filters -->
 <div class="floating-search">
     <div class="search-wrapper">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon">&#128269;</span>
         <input 
             type="text" 
             id="searchInput" 
@@ -1275,7 +1279,7 @@
         <span class="search-count" id="searchCount">
             <span id="matchCount">0</span> matches
         </span>
-        <button class="clear-search" id="clearSearch">✕</button>
+        <button class="clear-search" id="clearSearch">&times;</button>
     </div>
     
     <div class="filter-scroll">
@@ -1317,11 +1321,11 @@
             </div>
         
             <div class="filter-chip">
-                <button class="filter-btn" id="cityFilterBtn">
-                    <span class="filter-label">City</span>
-                    <span class="filter-value default" id="cityFilterText"></span>
+                <button class="filter-btn" id="countyFilterBtn">
+                    <span class="filter-label">County</span>
+                    <span class="filter-value default" id="countyFilterText"></span>
                 </button>
-                <div class="filter-dropdown" id="cityDropdown">
+                <div class="filter-dropdown" id="countyDropdown">
                     <div class="filter-option selected" data-value="all">All</div>
                     <!-- Cities populated dynamically -->
                 </div>
@@ -1330,7 +1334,7 @@
             <div class="filter-chip">
                 <button class="filter-btn default-state" id="sortBtn">
                     <i class="fa-solid fa-filter"></i>
-                    <span class="filter-value" id="sortText">Name</span> <span id="sortDirection">↓</span>
+                    <span class="filter-value" id="sortText">Name</span> <span id="sortDirection">&updownarrow;</span>
                 </button>
                 <div class="filter-dropdown" id="sortDropdown">
                     <div class="filter-option selected sort-asc" data-value="name">Name</div>
@@ -1341,7 +1345,7 @@
             </div>
         
             <!-- Clear All Filters Button -->
-            <button class="clear-all-btn" id="clearAllBtn" title="Clear all filters and sorts">✕</button>
+            <button class="clear-all-btn" id="clearAllBtn" title="Clear all filters and sorts">&times;</button>
         </div>
     </div>
     
@@ -1369,7 +1373,7 @@
                     <div class="stat-value" id="stat-violations">0</div>
                 </div>
             </div>
-            <div class="stats-toggle" id="statsToggle">▼</div>
+            <div class="stats-toggle" id="statsToggle">&#9660;</div>
         </div>
         
         <div class="stats-gauges" id="statsGauges">
@@ -1422,7 +1426,7 @@
                 <span class="legend-title">About & Risk Guide</span>
                 <i class="fas fa-info-circle" style="font-size: 0.75rem; opacity: 0.7; margin-left: 6px;"></i>
             </div>
-            <div class="legend-toggle collapsed" id="aboutToggle">▼</div>
+            <div class="legend-toggle collapsed" id="aboutToggle">&#9660;</div>
         </div>
         <div class="legend-content collapsed" id="aboutContent">
             <!-- About Section -->
@@ -1440,7 +1444,7 @@
                 </p>
                 <p>
                     <a href="https://iowa.safefoodinspection.com" target="_blank" rel="noopener noreferrer">
-                        View Official Database →
+                        View Official Database &rarr;
                     </a>
                 </p>
             </div>
@@ -1481,6 +1485,7 @@
         </div>
     </div>
 </div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
@@ -1511,15 +1516,27 @@ function toggleStats() {
 }
 
 // Global state
-let map, markersCluster, allData = [];
+let map, markersCluster, allData = [], filteredResults = [];
 let currentRiskFilter = 'all';
 let currentTypeFilter = 'all';
-let currentCityFilter = 'all';
+let currentCountyFilter = 'all';
 let currentSort = 'name';
 let sortAscending = true;
 let selectedEstablishment = null;
 let persistentTooltip = null;
 let searchDebounceTimer = null;
+let isSelectingFacility = false; // Flag to prevent reset during facility selection
+
+// CHANGE 2: Helper to clear current selection
+function resetSelection() {
+    selectedEstablishment = null;
+    document.querySelectorAll('.result-item').forEach(i => i.classList.remove('expanded'));
+    // Close any open popups/tooltips on the map
+    if (persistentTooltip) {
+        map.closeTooltip(persistentTooltip);
+        persistentTooltip = null;
+    }
+}
 
 // Debounce function for search performance
 function debounce(func, wait) {
@@ -1573,6 +1590,20 @@ function initMap() {
     });
     
     map.addLayer(markersCluster);
+    
+    // CHANGE 1 & 2: Dynamic stats and selection reset
+    // Update stats whenever the map stops moving or zooming
+    map.on('moveend', () => {
+        updateStatsFromMapView();
+    });
+    
+    // Deselect facility when the user starts interacting with the map
+    map.on('movestart', () => {
+        // Don't reset if we're programmatically selecting a facility
+        if (!isSelectingFacility) {
+            resetSelection();
+        }
+    });
     
     // Handle cluster clicks manually to prevent re-clustering after spiderfy
     markersCluster.on('clusterclick', function(a) {
@@ -1757,7 +1788,7 @@ function renderMarkers(data) {
             <div style="font-weight:700;margin-bottom:6px;">${formattedName}</div>
             <div style="font-size:0.85rem;color:#666;margin-bottom:4px;">${formattedAddress}</div>
             <div style="font-size:0.85rem;">
-                <span style="font-weight:700;color:${color};">${r.riskLevel}</span> — 
+                <span style="font-weight:700;color:${color};">${r.riskLevel}</span> &mdash; 
                 Score: ${r.riskScore}
             </div>
         `;
@@ -1769,16 +1800,25 @@ function renderMarkers(data) {
         });
         
         marker.on('click', () => {
+            // Set flag to prevent resetSelection during programmatic map movement
+            isSelectingFacility = true;
+            
             // Center on marker, but don't zoom out if already closer
             const currentZoom = map.getZoom();
             const targetZoom = Math.max(currentZoom, 18); // Zoom to 18 to ensure individual marker (breaks clusters)
             // Use offset helper
             setViewWithMobileOffset(r.lat, r.lng, targetZoom);
+            
             // Make tooltip persistent
             showPersistentTooltip(marker, tooltipContent);
             
             // Show details in sidebar
             showDetails(r);
+            
+            // Clear flag after a short delay (after map movement completes)
+            setTimeout(() => {
+                isSelectingFacility = false;
+            }, 500);
         });
         
         markersCluster.addLayer(marker);
@@ -1834,6 +1874,8 @@ function autoZoomToResults(results) {
         // Mobile: Add extra bottom padding to account for bottom sheet
         // Assuming sheet is at 50vh = 50% of screen height
         const bottomSheetPadding = window.innerHeight * 0.55; // 55% to account for sheet + margin
+    // CHANGE 2: Reset selection when filters change
+    resetSelection();
         paddingOptions = {
             paddingTopLeft: [50, 100],        // Top-left: small padding
             paddingBottomRight: [50, bottomSheetPadding], // Bottom-right: large padding for sheet
@@ -1866,7 +1908,7 @@ function applyFilters() {
     
     // Normalize query: remove punctuation, split into terms
     const normalizedQuery = query.toLowerCase()
-        .replace(/[^\w\s]/g, '') // Remove all punctuation
+        .replace(/[219521912193]/g, '') // Remove all punctuation
         .replace(/\s+/g, ' ')     // Normalize whitespace
         .trim();
     
@@ -1877,9 +1919,9 @@ function applyFilters() {
         // Apply non-search filters first
         const matchesRisk = currentRiskFilter === 'all' || r.riskLevel === currentRiskFilter;
         const matchesType = currentTypeFilter === 'all' || r.facilityType === currentTypeFilter;
-        const matchesCity = currentCityFilter === 'all' || r.city === currentCityFilter;
+        const matchesCounty = currentCountyFilter === 'all' || r.county === currentCountyFilter;
         
-        if (!matchesRisk || !matchesType || !matchesCity) {
+        if (!matchesRisk || !matchesType || !matchesCounty) {
             return null; // Filtered out by non-search filters
         }
         
@@ -1889,7 +1931,7 @@ function applyFilters() {
         }
         
         // Normalize facility data (remove punctuation for matching)
-        const normalize = (str) => (str || '').toLowerCase().replace(/[^\w\s]/g, '');
+        const normalize = (str) => (str || '').toLowerCase().replace(/[219521912193]/g, '');
         
         const nameNorm = normalize(r.name);
         const cityNorm = normalize(r.city);
@@ -2071,7 +2113,17 @@ function updateStats(data) {
         if (segment) {
             const count = riskCounts[level];
             const percentage = (count / total) * 100;
-            segment.style.width = `${percentage}%`;
+            
+            // CHANGE 5: Use flex with minimum size for better UX
+            if (count > 0) {
+                const displayWeight = Math.max(percentage, 8);
+                segment.style.flex = `${displayWeight} 0 auto`;
+                segment.style.display = 'flex';
+            } else {
+                segment.style.flex = '0 0 0%';
+                segment.style.display = 'none';
+            }
+            segment.style.width = 'auto';
             
             // Update count display
             const countDisplay = segment.querySelector('.gauge-count');
@@ -2271,15 +2323,15 @@ function renderResults(data) {
             const violationMatchesKeyword = (violation) => {
                 if (!r.matchedTerms || r.matchedTerms.length === 0) return false;
                 
-                const normalize = (str) => (str || '').toLowerCase().replace(/[^\w\s]/g, '');
+                const normalize = (str) => (str || '').toLowerCase().replace(/[219521912193]/g, '');
                 const violationText = normalize(`${violation.codeExplanation || ''} ${violation.inspectorComments || ''}`);
                 
                 return r.matchedTerms.some(term => violationText.includes(term.toLowerCase()));
             };
             
             // Sort violations with smart priority:
-            // 1. Keyword-matched violations first (sorted HIGH → MEDIUM → LOW within matches)
-            // 2. Non-matched violations second (sorted HIGH → MEDIUM → LOW)
+            // 1. Keyword-matched violations first (sorted HIGH -> MEDIUM -> LOW within matches)
+            // 2. Non-matched violations second (sorted HIGH -> MEDIUM -> LOW)
             const tierOrder = { 'HIGH': 0, 'MEDIUM': 1, 'LOW': 2, 'CORE': 3, 'UNKNOWN': 4 };
             const sortedViolations = [...r.violations].sort((a, b) => {
                 const aMatches = violationMatchesKeyword(a);
@@ -2289,7 +2341,7 @@ function renderResults(data) {
                 if (aMatches && !bMatches) return -1;
                 if (!aMatches && bMatches) return 1;
                 
-                // SECONDARY: Sort by tier (HIGH → MEDIUM → LOW)
+                // SECONDARY: Sort by tier (HIGH -> MEDIUM -> LOW)
                 const tierA = tierOrder[a.tier] ?? 999;
                 const tierB = tierOrder[b.tier] ?? 999;
                 if (tierA !== tierB) return tierA - tierB;
@@ -2319,7 +2371,7 @@ function renderResults(data) {
                     <div class="violation-item ${tier} ${isKeywordMatch ? 'keyword-match' : ''}">
                         <div class="violation-code">${v.violationCode || 'N/A'}</div>
                         <div class="violation-badges">
-                            ${isKeywordMatch ? '<span class="violation-badge badge-match">🔎 Keyword Match</span>' : ''}
+                            ${isKeywordMatch ? '<span class="violation-badge badge-match">&#128269; Keyword Match</span>' : ''}
                             <span class="violation-badge badge-tier ${tier}">${tierLabel}</span>
                             <span class="violation-badge badge-points">${points} pts</span>
                             ${fdaClass ? `<span class="violation-badge badge-fda">${fdaClass}</span>` : ''}
@@ -2341,7 +2393,7 @@ function renderResults(data) {
         } else {
             violationsHTML = `
                 <div class="detail-section">
-                    <div class="no-violations">✓ No violations found on ${r.inspectionDate || 'inspection date unknown'}</div>
+                    <div class="no-violations">&#10003; No violations found on ${r.inspectionDate || 'inspection date unknown'}</div>
                 </div>
             `;
         }
@@ -2356,7 +2408,7 @@ function renderResults(data) {
                         <span class="result-score">Violations: ${r.totalViolations || 0}</span>
                         <span>${r.inspectionDate || 'Date unknown'}</span>
                         ${r.matchedFields && r.matchedFields.includes('violation') ? 
-                            '<span style="color:#e67e22;font-weight:700;">🔎 Found in violations</span>' : ''}
+                            '<span style="color:#e67e22;font-weight:700;">&#128269; Found in violations</span>' : ''}
                     </div>
                 </div>
                 <span class="result-badge" style="background:${color};">${r.riskLevel}</span>
@@ -2388,6 +2440,9 @@ function toggleDetails(item, establishment) {
         
         // Center map on this location with zoom
         if (establishment.lat && establishment.lng) {
+            // Set flag to prevent resetSelection during programmatic map movement
+            isSelectingFacility = true;
+            
             // Use offset helper
             setViewWithMobileOffset(establishment.lat, establishment.lng, 18);
             
@@ -2400,7 +2455,7 @@ function toggleDetails(item, establishment) {
                 <div style="font-weight:700;margin-bottom:6px;">${formattedName}</div>
                 <div style="font-size:0.85rem;color:#666;margin-bottom:4px;">${formattedAddress}</div>
                 <div style="font-size:0.85rem;">
-                    <span style="font-weight:700;color:${color};">${establishment.riskLevel}</span> — 
+                    <span style="font-weight:700;color:${color};">${establishment.riskLevel}</span> &mdash; 
                     Score: ${establishment.riskScore}
                 </div>
             `;
@@ -2420,6 +2475,11 @@ function toggleDetails(item, establishment) {
             .setLatLng([establishment.lat, establishment.lng])
             .setContent(tooltipContent)
             .addTo(map);
+            
+            // Clear flag after a short delay
+            setTimeout(() => {
+                isSelectingFacility = false;
+            }, 500);
         }
     } else {
         selectedEstablishment = null;
@@ -2569,30 +2629,30 @@ function setupFilterDropdowns() {
         });
     });
     
-    // City filter
-    const cityBtn = document.getElementById('cityFilterBtn');
-    const cityDropdown = document.getElementById('cityDropdown');
+    // County filter
+    const countyBtn = document.getElementById('countyFilterBtn');
+    const countyDropdown = document.getElementById('countyDropdown');
     
-    cityBtn.addEventListener('click', (e) => {
+    countyBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        cityDropdown.classList.toggle('visible');
-        closeOtherDropdowns('cityDropdown');
+        countyDropdown.classList.toggle('visible');
+        closeOtherDropdowns('countyDropdown');
         
         // Toggle body class for backdrop on mobile
         if (window.innerWidth <= 768) {
-            document.body.classList.toggle('dropdown-open', cityDropdown.classList.contains('visible'));
+            document.body.classList.toggle('dropdown-open', countyDropdown.classList.contains('visible'));
         }
     });
     
-    cityDropdown.querySelectorAll('.filter-option').forEach(option => {
+    countyDropdown.querySelectorAll('.filter-option').forEach(option => {
         option.addEventListener('click', (e) => {
             e.stopPropagation();  // CRITICAL: Prevent document click handler
-            cityDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
+            countyDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
             option.classList.add('selected');
-            currentCityFilter = option.dataset.value;
+            currentCountyFilter = option.dataset.value;
             
-            const filterLabel = cityBtn.querySelector('.filter-label');
-            const filterValue = document.getElementById('cityFilterText');
+            const filterLabel = countyBtn.querySelector('.filter-label');
+            const filterValue = document.getElementById('countyFilterText');
             
             if (option.dataset.value === 'all') {
                 // Show default label, hide value
@@ -2611,7 +2671,7 @@ function setupFilterDropdowns() {
                 filterValue.textContent = text;
             }
             
-            cityDropdown.classList.remove('visible');
+            countyDropdown.classList.remove('visible');
             if (window.innerWidth <= 768) {
                 document.body.classList.remove('dropdown-open');
             }
@@ -2670,8 +2730,8 @@ function setupFilterDropdowns() {
                 option.classList.add('sort-desc');
             }
             
-            document.getElementById('sortText').textContent = option.textContent.replace(/[↓↑]/g, '').trim();
-            document.getElementById('sortDirection').textContent = sortAscending ? '↓' : '↑';
+            document.getElementById('sortText').textContent = option.textContent.replace(/[↕↑↓]/g, '').trim();
+            document.getElementById('sortDirection').textContent = sortAscending ? '↑' : '↓';
             sortDropdown.classList.remove('visible');
             if (window.innerWidth <= 768) {
                 document.body.classList.remove('dropdown-open');
@@ -2701,7 +2761,7 @@ function setupFilterDropdowns() {
 
 // Helper to close other dropdowns
 function closeOtherDropdowns(exceptId) {
-    const dropdowns = ['riskDropdown', 'typeDropdown', 'cityDropdown', 'sortDropdown'];
+    const dropdowns = ['riskDropdown', 'typeDropdown', 'countyDropdown', 'sortDropdown'];
     dropdowns.forEach(id => {
         if (id !== exceptId) {
             const dropdown = document.getElementById(id);
@@ -2719,45 +2779,45 @@ function closeOtherDropdowns(exceptId) {
 }
 
 // Populate city filter options
-function populateCityFilter() {
-    const cities = [...new Set(allData.map(r => r.city).filter(Boolean))].sort();
-    const cityDropdown = document.getElementById('cityDropdown');
-    const cityBtn = document.getElementById('cityFilterBtn');
+function populateCountyFilter() {
+    const counties = [...new Set(allData.map(r => r.county).filter(Boolean))].sort();
+    const countyDropdown = document.getElementById('countyDropdown');
+    const countyBtn = document.getElementById('countyFilterBtn');
     
-    // Keep "All Cities" option
-    cities.forEach(city => {
+    // Keep "All Counties" option
+    counties.forEach(county => {
         const option = document.createElement('div');
         option.className = 'filter-option';
-        option.dataset.value = city;
-        option.textContent = city;
+        option.dataset.value = county;
+        option.textContent = county;
         
         option.addEventListener('click', (e) => {
             e.stopPropagation();  // CRITICAL: Prevent event bubbling
-            cityDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
+            countyDropdown.querySelectorAll('.filter-option').forEach(o => o.classList.remove('selected'));
             option.classList.add('selected');
-            currentCityFilter = city;
+            currentCountyFilter = county;
             
-            const filterLabel = cityBtn.querySelector('.filter-label');
-            const filterValue = document.getElementById('cityFilterText');
+            const filterLabel = countyBtn.querySelector('.filter-label');
+            const filterValue = document.getElementById('countyFilterText');
             
             // Hide label, show value
             filterLabel.style.display = 'none';
             filterValue.classList.remove('default');
-            let text = city;
+            let text = county;
             // Truncate if longer than 10 characters
             if (text.length > 10) {
                 text = text.substring(0, 10) + '...';
             }
             filterValue.textContent = text;
             
-            cityDropdown.classList.remove('visible');
+            countyDropdown.classList.remove('visible');
             if (window.innerWidth <= 768) {
                 document.body.classList.remove('dropdown-open');
             }
             applyFilters();
         });
         
-        cityDropdown.appendChild(option);
+        countyDropdown.appendChild(option);
     });
 }
 
@@ -2793,20 +2853,23 @@ fetch('restaurants-geocoded.json')
     })
     .then(data => {
         allData = data;
-        document.getElementById('loader').style.display = 'none';
+        filteredResults = [...allData];
         
-        // Populate city filter
-        populateCityFilter();
+        // Populate county filter
+        populateCountyFilter();
         
         // Show all facilities by default
         applyFilters();
         
+        // Hide loader
+        document.getElementById('loader').style.display = 'none';
+        
         console.log(`✅ Loaded ${data.length} establishments`);
     })
     .catch(err => {
-        console.error('❌ Error loading data:', err);
+        console.error('âŒ Error loading data:', err);
         document.getElementById('loader').innerHTML = 
-            '<div style="text-align:center;"><div style="font-size:3rem;margin-bottom:20px;">❌</div><div style="font-size:1.2rem;">Error Loading Data</div></div>';
+            '<div style="text-align:center;"><div style="font-size:3rem;margin-bottom:20px;">âŒ</div><div style="font-size:1.2rem;">Error Loading Data</div></div>';
     });
 
 // Event listeners
@@ -2897,7 +2960,7 @@ function updateClearAllButton() {
     const hasActiveFilters = 
         currentRiskFilter !== 'all' ||
         currentTypeFilter !== 'all' ||
-        currentCityFilter !== 'all' ||
+        currentCountyFilter !== 'all' ||
         currentSort !== 'name' ||
         !sortAscending;
     
@@ -2914,7 +2977,7 @@ document.getElementById('clearAllBtn').addEventListener('click', () => {
     // Reset all filters to default
     currentRiskFilter = 'all';
     currentTypeFilter = 'all';
-    currentCityFilter = 'all';
+    currentCountyFilter = 'all';
     currentSort = 'name';
     sortAscending = true;
     
@@ -2931,13 +2994,13 @@ document.getElementById('clearAllBtn').addEventListener('click', () => {
     });
     document.querySelector('#riskDropdown .filter-option[data-value="all"]').classList.add('selected');
     document.querySelector('#typeDropdown .filter-option[data-value="all"]').classList.add('selected');
-    document.querySelector('#cityDropdown .filter-option[data-value="all"]').classList.add('selected');
+    document.querySelector('#countyDropdown .filter-option[data-value="all"]').classList.add('selected');
     document.querySelector('#sortDropdown .filter-option[data-value="name"]').classList.add('selected');
     
     // Reset button appearances to default state
     const riskBtn = document.getElementById('riskFilterBtn');
     const typeBtn = document.getElementById('typeFilterBtn');
-    const cityBtn = document.getElementById('cityFilterBtn');
+    const countyBtn = document.getElementById('countyFilterBtn');
     
     // Show labels, hide values for filter buttons
     riskBtn.querySelector('.filter-label').style.display = 'inline';
@@ -2948,15 +3011,15 @@ document.getElementById('clearAllBtn').addEventListener('click', () => {
     document.getElementById('typeFilterText').classList.add('default');
     document.getElementById('typeFilterText').textContent = '';
     
-    cityBtn.querySelector('.filter-label').style.display = 'inline';
-    document.getElementById('cityFilterText').classList.add('default');
-    document.getElementById('cityFilterText').textContent = '';
+    countyBtn.querySelector('.filter-label').style.display = 'inline';
+    document.getElementById('countyFilterText').classList.add('default');
+    document.getElementById('countyFilterText').textContent = '';
     
     // Reset sort button
     const sortBtn = document.getElementById('sortBtn');
     sortBtn.classList.add('default-state');
     document.getElementById('sortText').textContent = 'Name';
-    document.getElementById('sortDirection').textContent = '↓';
+    document.getElementById('sortDirection').textContent = '↕';
     
     // Apply filters (will show all)
     applyFilters();
