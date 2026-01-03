@@ -203,16 +203,6 @@
         }
         
         /* Gray out sort button in default state */
-        #sortBtn.default-state {
-            color: #a0a0a0;
-        }
-        
-        #sortBtn.default-state .filter-value,
-        #sortBtn.default-state #sortDirection,
-        #sortBtn.default-state i {
-            color: #a0a0a0;
-        }
-        
         .filter-btn:hover {
             border-color: var(--primary);  /* Bold blue border */
             border-width: 3px;  /* Thicker on hover */
@@ -620,6 +610,84 @@
             transform: scaleY(1.15);  /* Expand on hover */
             border: 3px solid transparent;  /* No white border */
             z-index: 1;
+        }
+        
+        /* Compact Sort Header */
+        .sort-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: linear-gradient(to bottom, #fafbfc 0%, #f5f6f7 100%);
+            border-bottom: 1px solid var(--border);
+            border-top: 1px solid var(--border);
+            font-size: 0.8rem;
+        }
+        
+        .sort-label {
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+        }
+        
+        .sort-buttons {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+        
+        .sort-btn {
+            background: white;
+            border: 1px solid #d1d5db;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .sort-btn:hover {
+            border-color: var(--primary);
+            background: #f0f4ff;
+        }
+        
+        .sort-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .sort-btn i {
+            font-size: 0.65rem;
+            opacity: 0.9;
+        }
+        
+        /* Mobile optimization for sort header */
+        @media (max-width: 768px) {
+            .sort-header {
+                padding: 6px 12px;
+            }
+            
+            .sort-btn {
+                padding: 3px 6px;
+                font-size: 0.7rem;
+                gap: 3px;
+            }
+            
+            .sort-label {
+                font-size: 0.65rem;
+            }
         }
         
         /* Results list */
@@ -1331,19 +1399,6 @@
                 </div>
             </div>
         
-            <div class="filter-chip">
-                <button class="filter-btn default-state" id="sortBtn">
-                    <i class="fa-solid fa-filter"></i>
-                    <span class="filter-value" id="sortText">Name</span> <span id="sortDirection">&updownarrow;</span>
-                </button>
-                <div class="filter-dropdown" id="sortDropdown">
-                    <div class="filter-option selected sort-asc" data-value="name">Name</div>
-                    <div class="filter-option" data-value="date">Inspection Date</div>
-                    <div class="filter-option" data-value="risk">Risk Score</div>
-                    <div class="filter-option" data-value="violations">Violation Count</div>
-                </div>
-            </div>
-        
             <!-- Clear All Filters Button -->
             <button class="clear-all-btn" id="clearAllBtn" title="Clear all filters and sorts">&times;</button>
         </div>
@@ -1414,6 +1469,25 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <!-- Compact Sort Header -->
+    <div class="sort-header">
+        <span class="sort-label">Sort:</span>
+        <div class="sort-buttons">
+            <button class="sort-btn active" data-sort="name" data-order="asc">
+                Name <i class="fas fa-sort-up"></i>
+            </button>
+            <button class="sort-btn" data-sort="date">
+                Date <i class="fas fa-sort"></i>
+            </button>
+            <button class="sort-btn" data-sort="risk">
+                Risk <i class="fas fa-sort"></i>
+            </button>
+            <button class="sort-btn" data-sort="violations">
+                Violations <i class="fas fa-sort"></i>
+            </button>
         </div>
     </div>
     
@@ -2037,26 +2111,10 @@ function applyFilters() {
         matchCount.textContent = filteredWithScores.length;
         searchCount.classList.add('visible');
         
-        // Update sort button to show relevance is active
-        const hasSearchScores = filteredWithScores.some(r => r.searchScore > 0);
-        if (hasSearchScores) {
-            document.getElementById('sortText').textContent = 'Relevance';
-            document.getElementById('sortBtn').style.background = 'var(--primary)';
-            document.getElementById('sortBtn').style.color = 'white';
-        }
+        // Relevance sorting is automatic when search is active
+        // Sort buttons remain unchanged - user can override if desired
     } else {
         searchCount.classList.remove('visible');
-        
-        // Reset sort button to normal when no search
-        const sortText = {
-            'name': 'Name',
-            'date': 'Inspection Date',
-            'risk': 'Risk Score',
-            'violations': 'Violation Count'
-        };
-        document.getElementById('sortText').textContent = sortText[currentSort] || 'Name';
-        document.getElementById('sortBtn').style.background = '';
-        document.getElementById('sortBtn').style.color = '';
     }
     
     renderMarkers(filteredWithScores);
@@ -2679,66 +2737,43 @@ function setupFilterDropdowns() {
         });
     });
     
-    // Sort
-    const sortBtn = document.getElementById('sortBtn');
-    const sortDropdown = document.getElementById('sortDropdown');
-    
-    sortBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        sortDropdown.classList.toggle('visible');
-        closeOtherDropdowns('sortDropdown');
-        
-        // Toggle body class for backdrop on mobile
-        if (window.innerWidth <= 768) {
-            document.body.classList.toggle('dropdown-open', sortDropdown.classList.contains('visible'));
-        }
-    });
-    
-    sortDropdown.querySelectorAll('.filter-option').forEach(option => {
-        option.addEventListener('click', (e) => {
-            e.stopPropagation();  // CRITICAL: Prevent document click handler
-            const newSort = option.dataset.value;
-            
-            // Remove default state class when any sort is clicked
-            sortBtn.classList.remove('default-state');
-            
-            if (newSort === currentSort) {
-                // Toggle direction
-                sortAscending = !sortAscending;
-            } else {
-                // New sort field
-                sortDropdown.querySelectorAll('.filter-option').forEach(o => {
-                    o.classList.remove('selected');
-                    o.classList.remove('sort-asc');
-                    o.classList.remove('sort-desc');
-                });
-                option.classList.add('selected');
-                currentSort = newSort;
-                sortAscending = true;
-            }
-            
-            // Update arrow classes on all options
-            sortDropdown.querySelectorAll('.filter-option').forEach(o => {
-                o.classList.remove('sort-asc');
-                o.classList.remove('sort-desc');
+    // NEW: Sort Header Buttons
+    function setupSortButtons() {
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const field = btn.dataset.sort;
+                const icon = btn.querySelector('i');
+                
+                // If clicking the same field, toggle direction
+                if (currentSort === field) {
+                    sortAscending = !sortAscending;
+                } else {
+                    // New field selected - remove active from all
+                    document.querySelectorAll('.sort-btn').forEach(b => {
+                        b.classList.remove('active');
+                        b.querySelector('i').className = 'fas fa-sort';
+                    });
+                    
+                    // Set new field
+                    btn.classList.add('active');
+                    currentSort = field;
+                    // Default: Name A-Z, Date newest first, Risk/Violations highest first
+                    sortAscending = (field === 'name');
+                }
+                
+                // Update icon for active button
+                if (btn.classList.contains('active')) {
+                    icon.className = sortAscending ? 'fas fa-sort-up' : 'fas fa-sort-down';
+                }
+                
+                // Apply sorting
+                applyFilters();
             });
-            
-            // Add arrow class to selected option
-            if (sortAscending) {
-                option.classList.add('sort-asc');
-            } else {
-                option.classList.add('sort-desc');
-            }
-            
-            document.getElementById('sortText').textContent = option.textContent.replace(/[↕↑↓]/g, '').trim();
-            document.getElementById('sortDirection').textContent = sortAscending ? '↑' : '↓';
-            sortDropdown.classList.remove('visible');
-            if (window.innerWidth <= 768) {
-                document.body.classList.remove('dropdown-open');
-            }
-            applyFilters();
         });
-    });
+    }
+    
+    // Initialize sort buttons
+    setupSortButtons();
     
     // Close dropdowns when clicking outside
     document.addEventListener('click', () => {
@@ -2761,19 +2796,22 @@ function setupFilterDropdowns() {
 
 // Helper to close other dropdowns
 function closeOtherDropdowns(exceptId) {
-    const dropdowns = ['riskDropdown', 'typeDropdown', 'countyDropdown', 'sortDropdown'];
+    const dropdowns = ['riskDropdown', 'typeDropdown', 'countyDropdown'];
     dropdowns.forEach(id => {
         if (id !== exceptId) {
             const dropdown = document.getElementById(id);
-            dropdown.classList.remove('visible');
+            if (dropdown) {  // Check if element exists
+                dropdown.classList.remove('visible');
+            }
         }
     });
     
     // Remove backdrop on mobile
     if (window.innerWidth <= 768) {
-        const hasVisibleDropdown = dropdowns.some(id => 
-            document.getElementById(id).classList.contains('visible')
-        );
+        const hasVisibleDropdown = dropdowns.some(id => {
+            const dropdown = document.getElementById(id);
+            return dropdown && dropdown.classList.contains('visible');
+        });
         document.body.classList.toggle('dropdown-open', hasVisibleDropdown);
     }
 }
@@ -2995,7 +3033,6 @@ document.getElementById('clearAllBtn').addEventListener('click', () => {
     document.querySelector('#riskDropdown .filter-option[data-value="all"]').classList.add('selected');
     document.querySelector('#typeDropdown .filter-option[data-value="all"]').classList.add('selected');
     document.querySelector('#countyDropdown .filter-option[data-value="all"]').classList.add('selected');
-    document.querySelector('#sortDropdown .filter-option[data-value="name"]').classList.add('selected');
     
     // Reset button appearances to default state
     const riskBtn = document.getElementById('riskFilterBtn');
@@ -3015,11 +3052,14 @@ document.getElementById('clearAllBtn').addEventListener('click', () => {
     document.getElementById('countyFilterText').classList.add('default');
     document.getElementById('countyFilterText').textContent = '';
     
-    // Reset sort button
-    const sortBtn = document.getElementById('sortBtn');
-    sortBtn.classList.add('default-state');
-    document.getElementById('sortText').textContent = 'Name';
-    document.getElementById('sortDirection').textContent = '↕';
+    // Reset sort buttons to Name ascending
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.querySelector('i').className = 'fas fa-sort';
+    });
+    const nameBtn = document.querySelector('.sort-btn[data-sort="name"]');
+    nameBtn.classList.add('active');
+    nameBtn.querySelector('i').className = 'fas fa-sort-up';
     
     // Apply filters (will show all)
     applyFilters();
